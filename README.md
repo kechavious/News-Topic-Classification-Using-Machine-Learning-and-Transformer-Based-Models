@@ -1,4 +1,4 @@
-````markdown
+
 # 📰 News Topic Classification Using Machine Learning and Transformer-Based Models
 
 ---
@@ -169,9 +169,12 @@ python src/run_experiments.py
 
 ## 📚 References
 
-  * Devlin et al. (2019). *BERT: Pre-training of Deep Bidirectional Transformers*.
-  * Kim (2014). *Convolutional Neural Networks for Sentence Classification*.
-  * Zhang et al. (2015). *Character-level Convolutional Networks for Text Classification*.
+  * Kim, Y. (2014). Convolutional Neural Networks for Sentence Classification. Proceedings of EMNLP.
+  * Joulin, A., Grave, E., Bojanowski, P., & Mikolov, T. (2017).Bag of Tricks for Efficient Text Classification. Proceedings of EACL.
+  * Zhang, X., Zhao, J., & LeCun, Y. (2015).Character-Level Convolutional Networks for Text Classification. Advances in Neural Information Processing Systems.
+  * Yang, Z., Yang, D., Dyer, C., He, X., Smola, A., & Hovy, E. (2016).Hierarchical Attention Networks for Document Classification. Proceedings of NAACL.
+  * Devlin, J., Chang, M., Lee, K., & Toutanova, K. (2019).
+  * BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. Proceedings of NAACL.
 
 -----
 
