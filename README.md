@@ -1,4 +1,7 @@
-# News Topic Classification Using Machine Learning and Transformer-Based Models
+```md
+# 📰 News Topic Classification Using Machine Learning and Transformer-Based Models
+
+---
 
 ## 👥 Team Members
 - George Liu  
@@ -56,12 +59,12 @@ We implement and compare the following models:
 - Most Frequent Class (always predicts the most common label)
 
 ### 2️⃣ Traditional Machine Learning
-- Naive Bayes (MultinomialNB)
-- Logistic Regression with TF-IDF features
+- Naive Bayes (MultinomialNB)  
+- Logistic Regression with TF-IDF features  
 
 ### 3️⃣ Transformer Model
-- BERT (`bert-base-uncased`)
-- Fine-tuned for multi-class classification
+- BERT (`bert-base-uncased`)  
+- Fine-tuned for multi-class classification  
 
 ---
 
@@ -90,7 +93,7 @@ We also perform:
 | Logistic Regression | ~91% |
 | BERT | ~92–95% |
 
-### Key Observations
+### 🔑 Key Observations
 
 - Logistic Regression outperforms Naive Bayes due to better use of weighted features  
 - BERT achieves the highest performance by leveraging contextual representations  
@@ -106,18 +109,22 @@ We analyzed misclassified examples and found:
 
 - **Business vs Sci/Tech confusion**
   - Articles often contain both financial and technological terms  
+
 - **World vs Sports confusion**
   - International sports events resemble geopolitical news  
+
 - **Short text ambiguity**
   - Lack of context leads to incorrect classification  
 
-Example:
+### 📌 Example
 
+```
 
 "Apple reported strong quarterly revenue driven by iPhone sales."
 True: Business
 Predicted: Sci/Tech
 
+````
 
 ---
 
@@ -137,89 +144,126 @@ news-topic-classification/
 ├── analysis/
 ├── writeup/
 └── presentation/
+````
 
 ---
 
 ## 🚀 Installation
-1. Clone the repository
+
+### 1. Clone the repository
+
+```bash
 git clone https://github.com/your-repo/news-topic-classification.git
 cd news-topic-classification
+```
 
-2. Create virtual environment
+### 2. Create virtual environment
+
+```bash
 python -m venv venv
+```
 
-3. Activate environment
-Windows:
+### 3. Activate environment
+
+**Windows:**
+
+```bash
 venv\Scripts\activate
-Mac/Linux:
-source venv/bin/activate
+```
 
-4. Install dependencies
+**Mac/Linux:**
+
+```bash
+source venv/bin/activate
+```
+
+### 4. Install dependencies
+
+```bash
 pip install -r requirements.txt
+```
 
 ---
 
 ## ▶️ How to Run
-Run Baseline Models
+
+### Run Baseline Models
+
+```bash
 python src/baseline_models.py
+```
 
-Outputs:
+**Outputs:**
 
-baseline_results.csv
-error analysis CSV files
-Run BERT Model
-python src/bert_model.py
-
-Outputs:
-
-bert_results_summary.csv
-errors_bert_test.csv
+* `baseline_results.csv`
+* error analysis CSV files
 
 ---
+
+### Run BERT Model
+
+```bash
+python src/bert_model.py
+```
+
+**Outputs:**
+
+* `bert_results_summary.csv`
+* `errors_bert_test.csv`
+
+---
+
 ## 📂 Output Files
 
 After running, results are saved in:
 
+```text
 results/csv/
+```
 
 Including:
 
-Model performance summary
-Misclassified examples
-Error analysis
+* Model performance summary
+* Misclassified examples
+* Error analysis
 
 ---
-
 
 ## 🔮 Future Work
-Hyperparameter tuning
-Try other transformer models (RoBERTa, DistilBERT)
-Improve class imbalance handling
-Add visualization (confusion matrix heatmaps)
-Expand dataset to multi-domain classification
+
+* Hyperparameter tuning
+* Try other transformer models (RoBERTa, DistilBERT)
+* Improve class imbalance handling
+* Add visualization (confusion matrix heatmaps)
+* Expand dataset to multi-domain classification
+
 ---
 
-
 ## 📚 References
+
 Kim, Y. (2014).
-Convolutional Neural Networks for Sentence Classification. Proceedings of EMNLP.
+*Convolutional Neural Networks for Sentence Classification.* Proceedings of EMNLP.
 
 Joulin, A., Grave, E., Bojanowski, P., & Mikolov, T. (2017).
-Bag of Tricks for Efficient Text Classification. Proceedings of EACL.
+*Bag of Tricks for Efficient Text Classification.* Proceedings of EACL.
 
 Zhang, X., Zhao, J., & LeCun, Y. (2015).
-Character-Level Convolutional Networks for Text Classification. Advances in Neural Information Processing Systems.
+*Character-Level Convolutional Networks for Text Classification.* Advances in Neural Information Processing Systems.
 
 Yang, Z., Yang, D., Dyer, C., He, X., Smola, A., & Hovy, E. (2016).
-Hierarchical Attention Networks for Document Classification. Proceedings of NAACL.
+*Hierarchical Attention Networks for Document Classification.* Proceedings of NAACL.
 
 Devlin, J., Chang, M., Lee, K., & Toutanova, K. (2019).
-BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. Proceedings of NAACL.
+*BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding.* Proceedings of NAACL.
 
 ---
 
 ## 📜 License
+
 This project is for academic use only.
+
+```
+```
 
 
 
