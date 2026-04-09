@@ -12,45 +12,38 @@
 
 ---
 
-## 📌 Motivation
+## 🔍 Motivation
 
-Text classification is a core task in Natural Language Processing (NLP), widely used in:
+Text classification plays a critical role in organizing and understanding massive volumes of news content generated daily across digital platforms.
 
-- Document organization  
-- Content recommendation systems  
-- Spam filtering  
-- Information retrieval  
+Traditional NLP approaches rely on **bag-of-words and TF-IDF representations**, which fail to capture contextual relationships between words.
 
-Traditional models (e.g., Naive Bayes, Logistic Regression) rely on **sparse lexical representations** such as TF-IDF, which ignore context.
+With the emergence of transformer-based models like **BERT**, it is now possible to model deeper semantic meaning.
 
-In contrast, transformer-based models like **BERT** learn **contextual embeddings**, enabling deeper semantic understanding.
-
-👉 This project investigates the **performance gap between classical NLP methods and modern deep learning approaches**.
+This project investigates **how contextual models improve classification performance compared to classical methods**.
 
 ---
 
-## ❓ Research Question
+## 🧠 Research Question
 
-> To what extent do transformer-based models (BERT) outperform traditional TF-IDF-based classifiers in multi-class news topic classification?
-
----
-
-## 📊 Dataset
-
-We use the **AG News Dataset** (via Hugging Face), a benchmark dataset for text classification.
+**How much improvement does a transformer-based model (BERT) provide over traditional TF-IDF-based classifiers for news topic classification?**
 
 ---
 
-### Categories
+## 🧪 Methodology
 
-- 🌍 World  
-- ⚽ Sports  
-- 💼 Business  
-- 💻 Sci/Tech  
+### **1. Dataset**
 
----
+We use the **AG News dataset**, a standard benchmark for text classification.
 
-### Data Split
+Categories:
+
+- World  
+- Sports  
+- Business  
+- Sci/Tech  
+
+Dataset size:
 
 - Training set: ~108,000  
 - Development set: ~12,000  
@@ -58,182 +51,118 @@ We use the **AG News Dataset** (via Hugging Face), a benchmark dataset for text 
 
 ---
 
-## ⚙️ Methods
+### **2. Feature Representation**
 
-We implement three tiers of models:
+#### **TF-IDF Representation**
 
----
+$$
+tfidf(t,d) = tf(t,d) \cdot \log \frac{N}{df(t)}
+$$
 
-### 1️⃣ Baseline Model
-
-- **Most Frequent Class**
-  - Predicts the most common label  
-  - Serves as a lower-bound benchmark (~25%)  
+Captures word importance using frequency-based weighting.
 
 ---
 
-### 2️⃣ Traditional Machine Learning
+#### **Contextual Embedding (BERT)**
 
-- **Naive Bayes (MultinomialNB)**
-  - Assumes feature independence  
-  - Efficient and fast baseline  
+$$
+H = \text{BERT}(X)
+$$
 
----
-
-- **Logistic Regression (TF-IDF)**
-  - Uses weighted features  
-  - Strong linear classifier baseline  
+Generates contextual embeddings for each input sequence.
 
 ---
 
-### 3️⃣ Transformer Model
+### **3. Classification Models**
 
-- **BERT (`bert-base-uncased`)**
-  - Pretrained transformer architecture  
-  - Fine-tuned for classification  
-  - Captures contextual word relationships  
+#### **Baseline**
+
+- Most Frequent Class  
 
 ---
 
-## 🧪 Evaluation Metrics
+#### **Traditional Models**
+
+- Naive Bayes (MultinomialNB)  
+- Logistic Regression (TF-IDF)  
+
+---
+
+#### **Transformer Model**
+
+- Fine-tuned BERT (`bert-base-uncased`)  
+
+---
+
+### **4. Evaluation Metrics**
 
 We evaluate model performance using:
 
-- **Accuracy** — overall correctness  
-- **Precision (macro)** — class-wise exactness  
-- **Recall (macro)** — class-wise coverage  
-- **F1-score (macro)** — harmonic balance  
+- Accuracy  
+- Precision (macro)  
+- Recall (macro)  
+- F1-score (macro)  
 
 ---
 
-### 📊 Additional Analysis
+### **5. Error Analysis**
 
-- Confusion matrix visualization  
-- Misclassification pattern analysis  
-- Category-level performance breakdown  
+We analyze misclassified examples to understand:
 
----
-
-## 📈 Results Summary
-
-| Model | Accuracy |
-|------|--------|
-| Most Frequent Baseline | ~25% |
-| Naive Bayes | ~90% |
-| Logistic Regression | ~91% |
-| BERT | ~92–95% |
+- Category confusion patterns  
+- Ambiguity in short texts  
+- Limitations of each model  
 
 ---
 
-### 🔑 Key Observations
-
-- Logistic Regression slightly outperforms Naive Bayes due to better feature weighting  
-- BERT achieves the highest accuracy through contextual understanding  
-- Traditional models remain competitive despite simplicity  
-
----
-
-## 🔍 Error Analysis
-
-We identify several systematic error patterns:
-
----
-
-### 1. Business ↔ Sci/Tech Confusion
-
-- Overlapping vocabulary (e.g., "Apple", "AI", "market")  
-- Mixed financial and technological context  
-
----
-
-### 2. World ↔ Sports Confusion
-
-- International sports events resemble geopolitical reporting  
-
----
-
-### 3. Short Text Ambiguity
-
-- Lack of contextual signals leads to misclassification  
-
----
-
-### 📌 Example
+## 📁 Project Structure
 
 ```
 
-Input:
-"Apple reported strong quarterly revenue driven by iPhone sales."
-
-True Label: Business
-Predicted Label: Sci/Tech
-
-```
-
----
-```
-
-
-## 🧱 Project Structure
-
-```text
 news-topic-classification/
 │
-├── README.md
+├── data/                           # Dataset files
+│   ├── train.csv
+│   ├── dev.csv
+│   └── test.csv
+│
+├── src/                            # Core implementation
+│   ├── baseline_models.py          # Naive Bayes & Logistic Regression
+│   ├── bert_model.py               # BERT fine-tuning
+│   ├── utils.py                    # Preprocessing & helpers
+│   └── error_analysis.py           # Misclassification analysis
+│
+├── results/                        # Output results
+│   ├── csv/
+│   └── plots/
+│
+├── analysis/                       # Additional experiments
+│
+├── writeup/                        # Final report
+│   └── report.pdf
+│
+├── presentation/                   # Slides
+│   ├── slides.pptx
+│   └── notes.md
+│
 ├── requirements.txt
-│
-├── src/
-│   ├── baseline_models.py        # Naive Bayes & Logistic Regression
-│   ├── bert_model.py            # BERT fine-tuning
-│   ├── utils.py                 # Data processing utilities
-│   └── error_analysis.py        # Misclassification analysis
-│
-├── results/
-│   └── csv/                     # Output metrics & error logs
-│
-├── analysis/                    # Additional analysis scripts
-├── writeup/                     # Final report
-├── presentation/                # Slides
+├── README.md
+└── LICENSE
+
 ````
 
 ---
 
-## 🚀 Installation
+## ⚙️ Installation
 
-### 1️⃣ Clone Repository
+Clone the repository:
 
 ```bash
-git clone https://github.com/your-repo/news-topic-classification.git
+git clone https://github.com/<your-username>/news-topic-classification.git
 cd news-topic-classification
-```
+````
 
----
-
-### 2️⃣ Create Virtual Environment
-
-```bash
-python -m venv venv
-```
-
----
-
-### 3️⃣ Activate Environment
-
-**Windows**
-
-```bash
-venv\Scripts\activate
-```
-
-**Mac/Linux**
-
-```bash
-source venv/bin/activate
-```
-
----
-
-### 4️⃣ Install Dependencies
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
@@ -241,80 +170,109 @@ pip install -r requirements.txt
 
 ---
 
-## ▶️ How to Run
+## ▶️ Running Experiments
 
----
-
-### 🔹 Run Baseline Models
+### **1. Train Baseline Models**
 
 ```bash
 python src/baseline_models.py
 ```
 
-**Outputs**
-
-* `baseline_results.csv`
-* Error analysis CSV files
-
 ---
 
-### 🔹 Run BERT Model
+### **2. Train BERT Model**
 
 ```bash
 python src/bert_model.py
 ```
 
-**Outputs**
-
-* `bert_results_summary.csv`
-* `errors_bert_test.csv`
-
 ---
 
-## 📂 Output Files
+### **3. Run Full Pipeline**
 
-All results are stored in:
-
-```text
-results/csv/
+```bash
+python src/run_experiments.py
 ```
 
-Including:
+---
 
-* Model performance summaries
-* Misclassified examples
-* Detailed error analysis
+## 📊 Results Summary
+
+* Traditional models perform strongly with TF-IDF features
+* Logistic Regression slightly outperforms Naive Bayes
+* BERT achieves the best performance due to contextual understanding
+
+| Model               | Accuracy |
+| ------------------- | -------- |
+| Baseline            | ~25%     |
+| Naive Bayes         | ~90%     |
+| Logistic Regression | ~91%     |
+| BERT                | ~92–95%  |
 
 ---
 
-## 🔮 Future Work
+## 🔍 Example
 
-* Hyperparameter tuning for all models
-* Experiment with RoBERTa / DistilBERT
-* Class imbalance handling
-* Visualization (confusion matrix heatmaps)
-* Extend to multi-domain datasets
+```
+Input:
+"Apple reported strong quarterly revenue driven by iPhone sales."
+
+True Label: Business  
+Predicted Label: Sci/Tech  
+```
+
+---
+
+## 📘 Report
+
+See:
+
+```
+writeup/report.pdf
+```
+
+---
+
+## 🎤 Presentation
+
+See:
+
+```
+presentation/slides.pptx
+presentation/notes.md
+```
 
 ---
 
 ## 📚 References
 
-* Kim, Y. (2014). *CNN for Sentence Classification*
-* Joulin et al. (2017). *FastText*
-* Zhang et al. (2015). *Character-level CNN*
-* Yang et al. (2016). *Hierarchical Attention Networks*
-* Devlin et al. (2019). *BERT*
+* Kim (2014) — CNN for Sentence Classification
+* Joulin et al. (2017) — FastText
+* Zhang et al. (2015) — Character-level CNN
+* Yang et al. (2016) — Hierarchical Attention Networks
+* Devlin et al. (2019) — BERT
 
 ---
 
-## 📜 License
+## ✨ Author
 
-This project is intended for academic and educational use only.
+**Gordon Zou**
+New York University
+
+---
+
+## 📄 License
+
+MIT License
+
+This project was developed as part of coursework at New York University (NYU).
+NYU does not claim ownership or endorsement of this software.
 
 ---
 
 ```
 ```
+
 
 
 
