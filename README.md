@@ -138,6 +138,7 @@ news-topic-classification/
 ├── writeup/
 └── presentation/
 
+---
 
 ## 🚀 Installation
 1. Clone the repository
@@ -156,6 +157,8 @@ source venv/bin/activate
 4. Install dependencies
 pip install -r requirements.txt
 
+---
+
 ## ▶️ How to Run
 Run Baseline Models
 python src/baseline_models.py
@@ -172,7 +175,8 @@ Outputs:
 bert_results_summary.csv
 errors_bert_test.csv
 
-📂 Output Files
+---
+## 📂 Output Files
 
 After running, results are saved in:
 
@@ -184,12 +188,17 @@ Model performance summary
 Misclassified examples
 Error analysis
 
+---
+
+
 ## 🔮 Future Work
 Hyperparameter tuning
 Try other transformer models (RoBERTa, DistilBERT)
 Improve class imbalance handling
 Add visualization (confusion matrix heatmaps)
 Expand dataset to multi-domain classification
+---
+
 
 ## 📚 References
 Kim, Y. (2014).
@@ -206,6 +215,8 @@ Hierarchical Attention Networks for Document Classification. Proceedings of NAAC
 
 Devlin, J., Chang, M., Lee, K., & Toutanova, K. (2019).
 BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. Proceedings of NAACL.
+
+---
 
 ## 📜 License
 This project is for academic use only.
