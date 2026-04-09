@@ -1,4 +1,4 @@
-```md id="y2m1zz"
+```md
 # 📰 News Topic Classification Using Machine Learning and Transformer-Based Models
 
 ---
@@ -39,12 +39,16 @@ In contrast, transformer-based models like **BERT** learn **contextual embedding
 
 We use the **AG News Dataset** (via Hugging Face), a benchmark dataset for text classification.
 
+---
+
 ### Categories
 
 - 🌍 World  
 - ⚽ Sports  
 - 💼 Business  
 - 💻 Sci/Tech  
+
+---
 
 ### Data Split
 
@@ -73,6 +77,8 @@ We implement three tiers of models:
 - **Naive Bayes (MultinomialNB)**
   - Assumes feature independence  
   - Efficient and fast baseline  
+
+---
 
 - **Logistic Regression (TF-IDF)**
   - Uses weighted features  
@@ -162,9 +168,11 @@ Input:
 True Label: Business
 Predicted Label: Sci/Tech
 
-````
+```
 
 ---
+```
+
 
 ## 🧱 Project Structure
 
