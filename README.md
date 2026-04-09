@@ -1,193 +1,263 @@
-
 # 📰 News Topic Classification Using Machine Learning and Transformer-Based Models
 
 ---
 
-
 ## 👥 Team Members
 
-* **George Liu**
-* **Gordon Zou**
-* **Louis Dong**
-* **Zhiqi Zhou**
-
+- **George Liu**  
+- **Gordon Zou**  
+- **Louis Dong**  
+- **Zhiqi Zhou**
 
 ---
-
 
 ## 🔍 Motivation
 
-Text classification plays a critical role in organizing and understanding massive volumes of news content generated daily across digital platforms. 
+Text classification plays a critical role in organizing and understanding massive volumes of news content generated daily across digital platforms.
 
-Traditional NLP approaches rely on **bag-of-words and TF-IDF representations**, which often fail to capture complex contextual relationships between words. With the emergence of transformer-based models like **BERT**, we can now model deeper semantic meaning. 
+Traditional NLP approaches rely on **bag-of-words and TF-IDF representations**, which often fail to capture contextual relationships between words. With the emergence of transformer-based models such as **BERT**, it is now possible to model deeper semantic meaning through contextual embeddings.
 
-This project investigates the performance gap between frequency-based statistical models and deep contextual embeddings.
-
+This project investigates the performance gap between frequency-based statistical models and transformer-based neural models.
 
 ---
-
 
 ## 🧠 Research Question
 
 > **How much improvement does a transformer-based model (BERT) provide over traditional TF-IDF-based classifiers for news topic classification?**
 
-
 ---
-
 
 ## 🧪 Methodology
 
 ### **1. Dataset**
-We use the **AG News dataset**, a standard benchmark for text classification.
-* **Categories:** World, Sports, Business, Sci/Tech.
-* **Dataset size:** ~108,000 (Train) / ~12,000 (Dev) / ~7,600 (Test).
+
+We use the **AG News dataset**, a widely used benchmark for text classification.
+
+- **Categories:** World, Sports, Business, Sci/Tech  
+- **Dataset size:** ~108,000 (Train) / ~12,000 (Dev) / ~7,600 (Test)
+
+---
 
 ### **2. Feature Representation**
 
-#### **TF-IDF Representation**
+#### 🔹 TF-IDF Representation
+
 $$
-tfidf(t,d) = tf(t,d) \cdot \log \frac{N}{df(t)}
+\text{tfidf}(t,d) = \text{tf}(t,d) \cdot \log\left(\frac{N}{df(t)}\right)
 $$
 
-#### **Contextual Embedding (BERT)**
+Where:
+
+- \( t \): term  
+- \( d \): document  
+- \( N \): total number of documents  
+- \( df(t) \): number of documents containing term \( t \)
+
+---
+
+#### 🔹 Transformer Representation (BERT)
+
+Input sequence:
+
+$$
+X = (x_1, x_2, ..., x_n)
+$$
+
+Contextual encoding:
+
 $$
 H = \text{BERT}(X)
 $$
 
-### **3. Models Compared**
-* **Baseline:** Most Frequent Class.
-* **Traditional:** Naive Bayes (MultinomialNB), Logistic Regression.
-* **Transformer:** Fine-tuned `bert-base-uncased`.
+Classification layer:
 
+$$
+\hat{y} = \arg\max \; \text{Softmax}(W \cdot h_{[CLS]})
+$$
+
+Where:
+
+- \( h_{[CLS]} \) is the contextual representation of the entire sequence  
+- \( W \) is the learned classification weight matrix  
 
 ---
 
+### **3. Models Compared**
+
+- **Baseline:** Most Frequent Class  
+- **Traditional Models:**  
+  - Naive Bayes (MultinomialNB)  
+  - Logistic Regression (TF-IDF features)  
+- **Neural Model:**  
+  - Fine-tuned `bert-base-uncased`
+
+---
 
 ## 📁 Project Structure
 
 ```text
 news-topic-classification/
 │
-├── data/                           # Dataset files (train/dev/test)
-│   ├── train.csv
-│   └── ...
+├── data/                           # Dataset (optional, auto-loaded)
 │
 ├── src/                            # Core implementation
 │   ├── baseline_models.py          # NB & Logistic Regression
-│   ├── bert_model.py               # BERT fine-tuning logic
-│   ├── utils.py                    # Preprocessing & helpers
+│   ├── bert_model.py               # BERT fine-tuning
+│   ├── utils.py                    # Data loading & preprocessing
 │   └── error_analysis.py           # Misclassification analysis
 │
-├── results/                        # Output results
-│   ├── csv/                        # Metric logs
-│   └── plots/                      # Confusion matrices
+├── results/
+│   ├── csv/                        # Evaluation results
+│   └── plots/                      # Visualization outputs
 │
 ├── writeup/                        # Final report
-│   └── report.pdf
+├── presentation/                   # Slides
 │
-├── presentation/                   # Presentation materials
-│   └── slides.pptx
-│
-├── requirements.txt                # Dependencies
-└── README.md                       # Documentation
+├── requirements.txt
+└── README.md
 ````
 
------
+---
 
 ## ⚙️ Installation
 
-**1. Clone the repository:**
+### 1. Clone repository
 
 ```bash
-git clone [https://github.com/](https://github.com/)<your-username>/news-topic-classification.git
+git clone https://github.com/your-username/news-topic-classification.git
 cd news-topic-classification
 ```
 
-**2. Install dependencies:**
+### 2. Create virtual environment
+
+```bash
+python -m venv venv
+```
+
+### 3. Activate environment
+
+**Windows**
+
+```bash
+venv\Scripts\activate
+```
+
+**Mac/Linux**
+
+```bash
+source venv/bin/activate
+```
+
+### 4. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
------
+---
 
 ## ▶️ Running Experiments
 
-### **Step 1: Train Baseline Models**
+### **Train Baseline Models**
 
 ```bash
 python src/baseline_models.py
 ```
 
-### **Step 2: Train BERT Model**
+### **Train BERT Model**
 
 ```bash
 python src/bert_model.py
 ```
 
-### **Step 3: Run Full Pipeline**
-
-```bash
-python src/run_experiments.py
-```
-
------
+---
 
 ## 📊 Results Summary
 
-  * **Non-linearity:** Transformer models effectively capture semantic nuances missed by TF-IDF.
-  * **Efficiency:** Logistic Regression remains a highly competitive baseline for this dataset.
+| Model               | Accuracy | Precision | Recall   | F1       |
+| ------------------- | -------- | --------- | -------- | -------- |
+| Baseline            | ~25%     | -         | -        | -        |
+| Naive Bayes         | ~90%     | 0.90      | 0.90     | 0.90     |
+| Logistic Regression | ~91%     | 0.91      | 0.91     | 0.91     |
+| BERT                | **~94%** | **0.94**  | **0.94** | **0.94** |
 
-| Model | Accuracy | Precision | Recall | F1-Score |
-| :--- | :--- | :--- | :--- | :--- |
-| **Baseline** | \~25% | - | - | - |
-| **Naive Bayes** | \~90% | 0.90 | 0.90 | 0.90 |
-| **Logistic Regression** | \~91% | 0.91 | 0.91 | 0.91 |
-| **BERT (Fine-tuned)** | **\~94%** | **0.94** | **0.94** | **0.94** |
+### 🔑 Key Insights
 
------
+* Logistic Regression is a strong traditional baseline
+* BERT significantly improves performance via contextual understanding
+* Major confusion occurs between:
 
-## 🔍 Classification Example
+  * Business ↔ Sci/Tech
+  * World ↔ Sports
 
-**Input Sequence:**
+---
 
-> "Apple reported strong quarterly revenue driven by iPhone sales."
+## 🔍 Error Analysis
 
-**Analysis:**
+Common error patterns:
 
-  * **True Label:** `Business`
-  * **Predicted Label:** `Sci/Tech`
+* **Business vs Sci/Tech**
 
------
+  * Overlapping vocabulary (companies, AI, products)
 
-## 📘 Documentation & Presentation
+* **World vs Sports**
 
-  * **Final Report:** [View Report](https://www.google.com/search?q=./writeup/report.pdf)
-  * **Slides:** [View Presentation](https://www.google.com/search?q=./presentation/slides.pptx)
+  * International events with similar entities
 
------
+* **Short text ambiguity**
+
+  * Insufficient context
+
+### Example
+
+```
+"Apple reported strong quarterly revenue driven by iPhone sales."
+True Label: Business  
+Predicted Label: Sci/Tech
+```
+
+---
+
+## 📘 Documentation
+
+* Final report: `writeup/report.pdf`
+* Presentation: `presentation/slides.pptx`
+
+---
 
 ## 📚 References
 
-  * Kim, Y. (2014). Convolutional Neural Networks for Sentence Classification. Proceedings of EMNLP.
-  * Joulin, A., Grave, E., Bojanowski, P., & Mikolov, T. (2017).Bag of Tricks for Efficient Text Classification. Proceedings of EACL.
-  * Zhang, X., Zhao, J., & LeCun, Y. (2015).Character-Level Convolutional Networks for Text Classification. Advances in Neural Information Processing Systems.
-  * Yang, Z., Yang, D., Dyer, C., He, X., Smola, A., & Hovy, E. (2016).Hierarchical Attention Networks for Document Classification. Proceedings of NAACL.
-  * Devlin, J., Chang, M., Lee, K., & Toutanova, K. (2019).
-  * BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. Proceedings of NAACL.
+Kim, Y. (2014).
+*Convolutional Neural Networks for Sentence Classification.* EMNLP.
 
------
+Joulin, A., Grave, E., Bojanowski, P., & Mikolov, T. (2017).
+*Bag of Tricks for Efficient Text Classification.* EACL.
+
+Zhang, X., Zhao, J., & LeCun, Y. (2015).
+*Character-Level Convolutional Networks for Text Classification.* NeurIPS.
+
+Yang, Z., Yang, D., Dyer, C., He, X., Smola, A., & Hovy, E. (2016).
+*Hierarchical Attention Networks for Document Classification.* NAACL.
+
+Devlin, J., Chang, M., Lee, K., & Toutanova, K. (2019).
+*BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding.* NAACL.
+
+---
 
 ## ✨ Author
 
 **Gordon Zou**
 New York University
 
------
+---
 
 ## 📄 License
 
-MIT License. Developed as part of coursework at **New York University (NYU)**.
+MIT License
+
+```
+```
+
 
 
 
