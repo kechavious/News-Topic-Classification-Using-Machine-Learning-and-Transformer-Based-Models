@@ -1,253 +1,267 @@
-```md
-# News Topic Classification Using Machine Learning and Transformer-Based Models
-
-## 👥 Team Members
-- George Liu  
-- Gordon Zou  
-- Louis Dong  
-- Zhiqi Zhou  
+```markdown
+# 📰 News Topic Classification
 
 ---
 
-## 📌 Motivation
+## 🔍 Motivation
 
-Text classification is a fundamental task in Natural Language Processing (NLP) with applications in:
+News content is growing exponentially across digital platforms. Automatically organizing and classifying news articles is essential for search, recommendation systems, and information retrieval.
 
-- Document organization  
-- Content recommendation  
-- Spam detection  
-- Information retrieval  
+Traditional methods rely on **TF-IDF and statistical models**, while modern NLP uses **transformers like BERT** to capture contextual meaning.
 
-Traditional models such as Naive Bayes and Logistic Regression rely on sparse lexical features (e.g., TF-IDF), while modern transformer-based models like BERT can capture contextual semantics.
-
-👉 This project aims to **quantitatively compare traditional models and transformer-based models** on a real-world dataset.
+This project explores the performance gap between these approaches.
 
 ---
 
-## ❓ Research Question
+## 🧠 Research Question
 
-> How much improvement does a transformer-based model (BERT) provide over traditional TF-IDF-based classifiers for news topic classification?
-
----
-
-## 📊 Dataset
-
-We use the **AG News Dataset** from Hugging Face.
-
-- Number of classes: 4  
-- Categories:
-  - World  
-  - Sports  
-  - Business  
-  - Sci/Tech  
-
-Dataset split:
-
-- Training set: ~108,000  
-- Development set: ~12,000  
-- Test set: ~7,600  
+**How do traditional machine learning models compare with transformer-based models in news topic classification?**
 
 ---
 
-## ⚙️ Methods
+## 🧪 Methodology
 
-We implement and compare the following models:
+### **1. Dataset**
 
-### 1️⃣ Baseline
-- Most Frequent Class (always predicts the most common label)
+We use the **AG News dataset**, containing labeled news articles across four categories:
 
-### 2️⃣ Traditional Machine Learning
-- Naive Bayes (MultinomialNB)
-- Logistic Regression with TF-IDF features
+- World  
+- Sports  
+- Business  
+- Technology  
 
-### 3️⃣ Transformer Model
-- BERT (`bert-base-uncased`)
-- Fine-tuned for multi-class classification
-
----
-
-## 🧪 Evaluation Metrics
-
-We evaluate all models using:
-
-- Accuracy  
-- Precision (macro)  
-- Recall (macro)  
-- F1-score (macro)  
-
-We also perform:
-
-- Confusion matrix analysis  
-- Error analysis using misclassified examples  
+Dataset size:
+- ~120,000 training samples  
+- ~7,600 test samples  
 
 ---
 
-## 📈 Results Summary
+### **2. Text Representation**
 
-| Model | Accuracy |
-|------|--------|
-| Most Frequent Baseline | ~25% |
-| Naive Bayes | ~90% |
-| Logistic Regression | ~91% |
-| BERT | ~92–95% |
+#### **TF-IDF Representation**
 
-### Key Observations
+$$
+tfidf(t,d) = tf(t,d) \cdot \log \frac{N}{df(t)}
+$$
 
-- Logistic Regression outperforms Naive Bayes due to better use of weighted features  
-- BERT achieves the highest performance by leveraging contextual representations  
-- Major confusion occurs between:
-  - Business ↔ Sci/Tech  
-  - World ↔ Sports  
+Captures word importance based on frequency.
 
 ---
 
-## 🔍 Error Analysis
+#### **Contextual Embedding (BERT)**
 
-We analyzed misclassified examples and found:
+$$
+H = \text{BERT}(X)
+$$
 
-- **Business vs Sci/Tech confusion**
-  - Articles often contain both financial and technological terms  
-- **World vs Sports confusion**
-  - International sports events resemble geopolitical news  
-- **Short text ambiguity**
-  - Lack of context leads to incorrect classification  
+Learns deep contextual representations of text.
 
-Example:
+---
+
+### **3. Classification Models**
+
+#### **Baseline**
+
+- Most Frequent Class
+
+#### **Traditional Models**
+
+- Naive Bayes  
+- Logistic Regression (TF-IDF)
+
+#### **Transformer Model**
+
+- Fine-tuned BERT  
+
+---
+
+### **4. Evaluation Metrics**
+
+Accuracy:
+
+$$
+Accuracy = \frac{\text{Correct Predictions}}{\text{Total Predictions}}
+$$
+
+Precision / Recall / F1-score are also used for detailed evaluation.
+
+---
+
+### **5. Error Analysis**
+
+We analyze misclassified examples to identify:
+
+- Confusion between categories  
+- Ambiguous wording  
+- Model limitations  
+
+---
+
+## 📁 Project Structure
 
 ```
 
-"Apple reported strong quarterly revenue driven by iPhone sales."
-True: Business
-Predicted: Sci/Tech
-
-````
-
----
-
-## 🧱 Project Structure
-
-```text
-news-topic-classification/
-├── README.md
-├── requirements.txt
-├── src/
-│   ├── baseline_models.py
+news_classification/
+│
+├── data/                           # Dataset (train/test splits)
+│   ├── train.csv
+│   ├── test.csv
+│
+├── preprocessing/                  # Text preprocessing
+│   ├── clean_text.py
+│   ├── tokenizer.py
+│
+├── models/                         # Model implementations
+│   ├── naive_bayes.py
+│   ├── logistic_regression.py
 │   ├── bert_model.py
-│   ├── utils.py
-│   └── error_analysis.py
-├── results/
-│   └── csv/
-├── analysis/
-├── writeup/
-└── presentation/
+│
+├── evaluation/                     # Metrics & evaluation
+│   ├── metrics.py
+│   ├── evaluate.py
+│
+├── experiments/                    # Experiment pipeline
+│   ├── train.py
+│   ├── run_experiments.py
+│
+├── results/                        # Outputs & visualizations
+│   ├── logs/
+│   ├── plots/
+│
+├── notebooks/                      # Jupyter experiments
+│   └── analysis.ipynb
+│
+├── requirements.txt
+├── README.md
+└── LICENSE
+
 ````
 
 ---
 
-## 🚀 Installation
-
-### 1. Clone the repository
+## ⚙️ Installation
 
 ```bash
-git clone https://github.com/your-repo/news-topic-classification.git
-cd news-topic-classification
-```
-
-### 2. Create virtual environment
-
-```bash
-python -m venv venv
-```
-
-### 3. Activate environment
-
-#### Windows:
-
-```bash
-venv\Scripts\activate
-```
-
-#### Mac/Linux:
-
-```bash
-source venv/bin/activate
-```
-
-### 4. Install dependencies
-
-```bash
+git clone https://github.com/<your-username>/news-classification.git
+cd news-classification
 pip install -r requirements.txt
-```
+````
 
 ---
 
-## ▶️ How to Run
+## ▶️ Running Experiments
 
-### Run Baseline Models
+### **1. Train model**
 
 ```bash
-python src/baseline_models.py
+python experiments/train.py --model nb
+python experiments/train.py --model lr
+python experiments/train.py --model bert
 ```
-
-Outputs:
-
-* `baseline_results.csv`
-* error analysis CSV files
 
 ---
 
-### Run BERT Model
+### **2. Evaluate model**
 
 ```bash
-python src/bert_model.py
+python evaluation/evaluate.py --model bert
 ```
-
-Outputs:
-
-* `bert_results_summary.csv`
-* `errors_bert_test.csv`
 
 ---
 
-## 📂 Output Files
+### **3. Run full experiment pipeline**
 
-After running, results are saved in:
-
-```text
-results/csv/
+```bash
+python experiments/run_experiments.py
 ```
-
-Including:
-
-* Model performance summary
-* Misclassified examples
-* Error analysis
 
 ---
 
-## 🔮 Future Work
+## 📊 Results Summary
 
-* Hyperparameter tuning
-* Try other transformer models (RoBERTa, DistilBERT)
-* Improve class imbalance handling
-* Add visualization (confusion matrix heatmaps)
-* Expand dataset to multi-domain classification
+* Traditional models perform well with TF-IDF features
+* Logistic Regression outperforms Naive Bayes
+* BERT achieves the highest accuracy due to contextual understanding
+
+| Model               | Accuracy |
+| ------------------- | -------- |
+| Baseline            | ~25%     |
+| Naive Bayes         | ~80%     |
+| Logistic Regression | ~88%     |
+| BERT                | ~93%     |
+
+---
+
+## 🔍 Example
+
+Input:
+
+```
+Apple reports strong quarterly earnings driven by iPhone sales.
+```
+
+Output:
+
+```
+Business
+```
+
+---
+
+## 🛠️ Tech Stack
+
+* Python
+* scikit-learn
+* PyTorch
+* HuggingFace Transformers
+* NLTK / spaCy
+
+---
+
+## 📘 Report
+
+See:
+
+```
+writeup/report.pdf
+```
+
+---
+
+## 🎤 Presentation
+
+See:
+
+```
+presentation/slides.pptx
+```
 
 ---
 
 ## 📚 References
 
-* Devlin et al. (2019), *BERT: Pre-training of Deep Bidirectional Transformers*
-* Kim (2014), *CNN for Sentence Classification*
-* Joulin et al. (2017), *FastText*
+* Kim, Y. (2014). CNN for Sentence Classification
+* Joulin et al. (2017). FastText
+* Zhang et al. (2015). Character-level CNN
+* Yang et al. (2016). Hierarchical Attention Networks
+* Devlin et al. (2019). BERT
 
 ---
 
-## 📜 License
+## ✨ Author
 
-This project is for academic use only.
+**Gordon Zou**
+New York University
+
+---
+
+## 📄 License
+
+MIT License
 
 ```
+```
+
 
 
 
