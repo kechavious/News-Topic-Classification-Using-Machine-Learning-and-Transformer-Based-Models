@@ -48,13 +48,11 @@ We use the **AG News dataset**, a standard benchmark for text classification.
 $$
 tfidf(t,d) = tf(t,d) \cdot \log \frac{N}{df(t)}
 $$
-Captures word importance using frequency-based weighting.
 
 #### **Contextual Embedding (BERT)**
 $$
 H = \text{BERT}(X)
 $$
-Generates deep contextual embeddings for each input sequence.
 
 ### **3. Models Compared**
 * **Baseline:** Most Frequent Class.
@@ -158,7 +156,7 @@ python src/run_experiments.py
 **Analysis:**
 
   * **True Label:** `Business`
-  * **Predicted Label:** `Sci/Tech` (Example of common confusion in the AG News dataset)
+  * **Predicted Label:** `Sci/Tech`
 
 -----
 
@@ -179,18 +177,14 @@ python src/run_experiments.py
 
 ## ✨ Author
 
-**Gordon Zou** *New York University*
+**Gordon Zou**
+New York University
 
 -----
 
 ## 📄 License
 
 MIT License. Developed as part of coursework at **New York University (NYU)**.
-
-```
-```
-
-
 
 
 
