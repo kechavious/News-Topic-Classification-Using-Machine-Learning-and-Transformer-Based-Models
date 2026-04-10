@@ -244,13 +244,6 @@ Devlin, J., Chang, M., Lee, K., & Toutanova, K. (2019).
 
 ---
 
-## ✨ Author
-
-**Gordon Zou**
-New York University
-
----
-
 ## 📄 License
 
 MIT License
