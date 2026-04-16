@@ -171,6 +171,12 @@ python src/baseline_models.py
 python src/bert_model.py
 ```
 
+### Generate Plots
+
+```bash
+python src/plot_results.py
+```
+
 ---
 
 ## 📊 Results Summary
