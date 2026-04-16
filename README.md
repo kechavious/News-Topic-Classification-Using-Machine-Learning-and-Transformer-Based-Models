@@ -1,3 +1,4 @@
+````md
 # 📰 News Topic Classification Using Machine Learning and Transformer-Based Models
 
 ---
@@ -17,13 +18,13 @@ Text classification plays a critical role in organizing and understanding massiv
 
 Traditional NLP approaches rely on **bag-of-words and TF-IDF representations**, which often fail to capture contextual relationships between words. With the emergence of transformer-based models such as **BERT**, it is now possible to model deeper semantic meaning through contextual embeddings.
 
-This project investigates the performance gap between frequency-based statistical models and transformer-based neural models.
+This project investigates the performance gap between frequency-based statistical models and transformer-based neural models. :contentReference[oaicite:0]{index=0}
 
 ---
 
 ## 🧠 Research Question
 
-> **How much improvement does a transformer-based model (BERT) provide over traditional TF-IDF-based classifiers for news topic classification?**
+> **How much improvement does a transformer-based model (BERT) provide over traditional TF-IDF-based classifiers for news topic classification?** :contentReference[oaicite:1]{index=1}
 
 ---
 
@@ -43,7 +44,7 @@ We use the **AG News dataset**, a widely used benchmark for text classification.
 #### 🔹 TF-IDF Representation
 
 $$
-\text{tfidf}(t,d) = \text{tf}(t,d) \cdot \log\left(\frac{N}{df(t)}\right)
+\text{tfidf}(t,d)=\text{tf}(t,d)\cdot \log\left(\frac{N}{df(t)}\right)
 $$
 
 Where:
@@ -60,19 +61,19 @@ Where:
 Input sequence:
 
 $$
-X = (x_1, x_2, ..., x_n)
+X=(x_1,x_2,\dots,x_n)
 $$
 
 Contextual encoding:
 
 $$
-H = \text{BERT}(X)
+H=\text{BERT}(X)
 $$
 
 Classification layer:
 
 $$
-\hat{y} = \arg\max \; \text{Softmax}(W \cdot h_{[CLS]})
+\hat{y}=\arg\max \text{Softmax}(W h_{[CLS]})
 $$
 
 Where:
@@ -106,7 +107,6 @@ news-topic-classification/
 │   ├── utils.py                    # Data loading & preprocessing
 │   ├── error_analysis.py           # Misclassification analysis
 │   └── plot_results.py
-|   
 │
 ├── results/
 │   ├── csv/                        # Evaluation results
@@ -118,6 +118,7 @@ news-topic-classification/
 ├── requirements.txt
 └── README.md
 ````
+
 ---
 
 ## ⚙️ Installation
@@ -171,7 +172,7 @@ python src/baseline_models.py
 python src/bert_model.py
 ```
 
-### Generate Plots
+### **Generate Plots**
 
 ```bash
 python src/plot_results.py
@@ -179,14 +180,14 @@ python src/plot_results.py
 
 ---
 
-## 📊 Results Summary
+## 📊 Final Results
 
-| Model               | Accuracy | Precision | Recall   | F1       |
-| ------------------- | -------- | --------- | -------- | -------- |
-| Baseline            | ~25%     | -         | -        | -        |
-| Naive Bayes         | ~90%     | 0.90      | 0.90     | 0.90     |
-| Logistic Regression | ~91%     | 0.91      | 0.91     | 0.91     |
-| BERT                | **~94%** | **0.94**  | **0.94** | **0.94** |
+| Model                  | Accuracy   | Precision  | Recall     | F1         |
+| ---------------------- | ---------- | ---------- | ---------- | ---------- |
+| Most Frequent Baseline | 0.2500     | 0.0625     | 0.2500     | 0.1000     |
+| Naive Bayes            | 0.9024     | 0.9024     | 0.9024     | 0.9024     |
+| Logistic Regression    | 0.9180     | 0.9180     | 0.9180     | 0.9180     |
+| BERT                   | **0.9487** | **0.9487** | **0.9487** | **0.9487** |
 
 ### 🔑 Key Insights
 
@@ -203,23 +204,23 @@ python src/plot_results.py
 
 Common error patterns:
 
-* **Business vs Sci/Tech**
+### **Business vs Sci/Tech**
 
-  * Overlapping vocabulary (companies, AI, products)
+* Overlapping vocabulary (companies, AI, products)
 
-* **World vs Sports**
+### **World vs Sports**
 
-  * International events with similar entities
+* International events with similar entities
 
-* **Short text ambiguity**
+### **Short text ambiguity**
 
-  * Insufficient context
+* Insufficient context
 
 ### Example
 
-```
-"Apple reported strong quarterly revenue driven by iPhone sales."
-True Label: Business  
+```text
+Apple reported strong quarterly revenue driven by iPhone sales.
+True Label: Business
 Predicted Label: Sci/Tech
 ```
 
@@ -257,6 +258,7 @@ MIT License
 
 ```
 ```
+
 
 
 
