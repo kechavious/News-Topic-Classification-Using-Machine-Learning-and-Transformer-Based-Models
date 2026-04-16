@@ -64,13 +64,6 @@ while the official test set was reserved strictly for final evaluation.
 
 ### 1️⃣ Feature Representation
 
-### 2️⃣ Experimental Protocol
-
-All models were trained on the training split and evaluated on the held-out
-validation split during development.
-
-Final performance metrics were reported only once on the untouched test set.
-
 ### 🔹 TF-IDF Representation
 
 $$
@@ -110,6 +103,14 @@ Where:
 
 - \( h_{[CLS]} \) is the sentence-level representation  
 - \( W \) is the learned classification matrix
+
+### 2️⃣ Experimental Protocol
+
+All models were trained on the training split and evaluated on the held-out
+validation split during development.
+
+Final performance metrics were reported only once on the untouched test set.
+
 
 ---
 
