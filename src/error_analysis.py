@@ -3,9 +3,16 @@ from sklearn.metrics import confusion_matrix
 from utils import LABEL_NAMES
 
 
-def save_error_analysis(texts, y_true, y_pred, output_file: str, max_examples: int = 100):
+def save_error_analysis(texts, y_true, y_pred, output_file: str, max_examples: int | None = None):
     """
     Save misclassified examples for manual error analysis.
+
+    Args:
+        texts: original input texts
+        y_true: gold labels
+        y_pred: predicted labels
+        output_file: path to save csv
+        max_examples: if None, save all errors; otherwise save only first N
     """
     errors = []
     for text, true_label, pred_label in zip(texts, y_true, y_pred):
@@ -18,7 +25,10 @@ def save_error_analysis(texts, y_true, y_pred, output_file: str, max_examples: i
                 }
             )
 
-    df = pd.DataFrame(errors[:max_examples])
+    if max_examples is not None:
+        errors = errors[:max_examples]
+
+    df = pd.DataFrame(errors)
     df.to_csv(output_file, index=False, encoding="utf-8-sig")
     print(f"Saved {len(df)} misclassified examples to {output_file}")
 

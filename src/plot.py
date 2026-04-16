@@ -1,191 +1,280 @@
-import matplotlib.pyplot as plt
 import os
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 # =========================
-# Path Settings
+# Path setup
 # =========================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# 如果 plot.py 放在 src/ 裡面，就回到上一層找 results/
-PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, "..")) if os.path.basename(BASE_DIR) == "src" else BASE_DIR
+if os.path.basename(BASE_DIR) == "src":
+    PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
+else:
+    PROJECT_ROOT = BASE_DIR
+
 RESULTS_DIR = os.path.join(PROJECT_ROOT, "results")
+CSV_DIR = os.path.join(RESULTS_DIR, "csv")
 PLOTS_DIR = os.path.join(RESULTS_DIR, "plots")
 
 os.makedirs(PLOTS_DIR, exist_ok=True)
 
 
 # =========================
-# Helper Functions
+# Helpers
 # =========================
-def normalize_columns(df):
-    """
-    Normalize column names to lowercase with underscores.
-    """
-    df.columns = [col.strip().lower().replace(" ", "_") for col in df.columns]
-    return df
-
-
-def find_metric_column(df, candidates):
-    """
-    Find the first matching column from a list of possible names.
-    """
-    for c in candidates:
-        if c in df.columns:
-            return c
+def find_existing_file(candidates):
+    for path in candidates:
+        if os.path.exists(path):
+            return path
     return None
 
 
-def standardize_summary_dataframe(df, default_models=None):
+def clean_columns(df):
+    df.columns = [str(c).strip() for c in df.columns]
+    return df
+
+
+def standardize_model_name(name: str) -> str:
+    name = str(name).strip().lower()
+
+    if "most frequent" in name:
+        return "Most Frequent Baseline"
+    if "naive bayes" in name:
+        return "Naive Bayes"
+    if "logistic regression" in name:
+        return "Logistic Regression"
+    if "bert" in name:
+        return "BERT"
+
+    return str(name).strip()
+
+
+def find_summary_file_paths():
+    baseline_candidates = [
+        os.path.join(CSV_DIR, "model_results_summary.csv"),
+        os.path.join(RESULTS_DIR, "model_results_summary.csv"),
+        os.path.join(PROJECT_ROOT, "model_results_summary.csv"),
+    ]
+
+    bert_candidates = [
+        os.path.join(CSV_DIR, "bert_results_summary.csv"),
+        os.path.join(RESULTS_DIR, "bert_results_summary.csv"),
+        os.path.join(PROJECT_ROOT, "bert_results_summary.csv"),
+    ]
+
+    baseline_path = find_existing_file(baseline_candidates)
+    bert_path = find_existing_file(bert_candidates)
+
+    if baseline_path is None:
+        raise FileNotFoundError("Cannot find model_results_summary.csv")
+    if bert_path is None:
+        raise FileNotFoundError("Cannot find bert_results_summary.csv")
+
+    return baseline_path, bert_path
+
+
+# =========================
+# Summary parsing
+# =========================
+def parse_long_format(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Convert different summary csv formats into a standard dataframe:
-    columns = [model, accuracy, precision, recall, f1]
+    Expected columns: Metric, Value
+    Example rows:
+      Most Frequent Accuracy (Test), 0.2500
+      Naive Bayes Precision (Test), 0.9024
+      BERT F1 (Test), 0.9487
     """
-    df = normalize_columns(df)
+    df = clean_columns(df)
 
-    # possible names for model column
-    model_col = find_metric_column(df, ["model", "model_name", "classifier"])
-    accuracy_col = find_metric_column(df, ["accuracy", "acc"])
-    precision_col = find_metric_column(df, ["precision", "macro_precision", "weighted_precision"])
-    recall_col = find_metric_column(df, ["recall", "macro_recall", "weighted_recall"])
-    f1_col = find_metric_column(df, ["f1", "f1_score", "macro_f1", "weighted_f1"])
+    if "Metric" not in df.columns or "Value" not in df.columns:
+        raise ValueError("Not long format")
 
-    # case 1: already in row format
-    if model_col is not None:
-        out = pd.DataFrame()
-        out["model"] = df[model_col]
-        out["accuracy"] = df[accuracy_col] if accuracy_col else None
-        out["precision"] = df[precision_col] if precision_col else None
-        out["recall"] = df[recall_col] if recall_col else None
-        out["f1"] = df[f1_col] if f1_col else None
-        return out
+    test_df = df[df["Metric"].astype(str).str.contains(r"\(Test\)", regex=True, na=False)].copy()
 
-    # case 2: models are columns, metrics are rows
-    possible_metric_col = find_metric_column(df, ["metric", "metrics"])
-    if possible_metric_col is not None:
-        df = df.set_index(possible_metric_col)
-        df.index = df.index.str.lower().str.strip()
+    rows = []
+    for _, row in test_df.iterrows():
+        metric_name = str(row["Metric"]).replace("(Test)", "").strip()
+        value = float(row["Value"])
 
-        records = []
-        for col in df.columns:
-            records.append({
-                "model": col,
-                "accuracy": df.loc["accuracy", col] if "accuracy" in df.index else None,
-                "precision": df.loc["precision", col] if "precision" in df.index else None,
-                "recall": df.loc["recall", col] if "recall" in df.index else None,
-                "f1": df.loc["f1", col] if "f1" in df.index else (
-                    df.loc["f1_score", col] if "f1_score" in df.index else None
-                )
-            })
-        return pd.DataFrame(records)
+        model = standardize_model_name(metric_name)
 
-    # case 3: one row csv without model column (assign default model)
-    if default_models is not None and len(df) == len(default_models):
-        out = pd.DataFrame()
-        out["model"] = default_models
-        out["accuracy"] = df[accuracy_col] if accuracy_col else None
-        out["precision"] = df[precision_col] if precision_col else None
-        out["recall"] = df[recall_col] if recall_col else None
-        out["f1"] = df[f1_col] if f1_col else None
-        return out
+        if "Accuracy" in metric_name:
+            metric = "Accuracy"
+        elif "Precision" in metric_name:
+            metric = "Precision"
+        elif "Recall" in metric_name:
+            metric = "Recall"
+        elif "F1" in metric_name:
+            metric = "F1"
+        else:
+            continue
 
-    raise ValueError("Could not identify summary CSV format.")
+        rows.append({"Model": model, "Metric": metric, "Value": value})
+
+    if not rows:
+        raise ValueError("No usable test rows in long format")
+
+    out = pd.DataFrame(rows)
+    out = out.pivot(index="Model", columns="Metric", values="Value").reset_index()
+    return out
 
 
-def load_summary_results():
+def parse_wide_format(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Load baseline summary and BERT summary, then merge.
+    Expected columns like:
+      Model, Accuracy, Precision, Recall, F1
+    or lowercase variants.
     """
-    baseline_path = os.path.join(RESULTS_DIR, "model_results_summary.csv")
-    bert_path = os.path.join(RESULTS_DIR, "bert_results_summary.csv")
+    df = clean_columns(df)
 
-    if not os.path.exists(baseline_path):
-        raise FileNotFoundError(f"Missing file: {baseline_path}")
-    if not os.path.exists(bert_path):
-        raise FileNotFoundError(f"Missing file: {bert_path}")
+    col_map = {c.lower(): c for c in df.columns}
 
-    baseline_df = pd.read_csv(baseline_path)
-    bert_df = pd.read_csv(bert_path)
+    model_col = col_map.get("model")
+    accuracy_col = col_map.get("accuracy")
+    precision_col = col_map.get("precision")
+    recall_col = col_map.get("recall")
+    f1_col = col_map.get("f1") or col_map.get("f1 score") or col_map.get("f1_score")
 
-    baseline_df = standardize_summary_dataframe(baseline_df)
-    bert_df = standardize_summary_dataframe(bert_df)
+    if not model_col or not accuracy_col or not precision_col or not recall_col or not f1_col:
+        raise ValueError("Not wide format")
 
-    combined_df = pd.concat([baseline_df, bert_df], ignore_index=True)
+    out = pd.DataFrame({
+        "Model": df[model_col].apply(standardize_model_name),
+        "Accuracy": pd.to_numeric(df[accuracy_col], errors="coerce"),
+        "Precision": pd.to_numeric(df[precision_col], errors="coerce"),
+        "Recall": pd.to_numeric(df[recall_col], errors="coerce"),
+        "F1": pd.to_numeric(df[f1_col], errors="coerce"),
+    })
 
-    # normalize model names
-    combined_df["model"] = combined_df["model"].astype(str).str.strip()
+    out = out.dropna(subset=["Model", "Accuracy", "Precision", "Recall", "F1"])
+    return out
 
-    # try to make model names prettier
-    model_rename = {
-        "most_frequent": "Most Frequent",
-        "naive_bayes": "Naive Bayes",
-        "logistic_regression": "Logistic Regression",
-        "bert": "BERT",
-        "bert_model": "BERT"
+
+def parse_summary_file(path: str) -> pd.DataFrame:
+    df = pd.read_csv(path)
+    df = clean_columns(df)
+
+    # Try long format first
+    try:
+        return parse_long_format(df)
+    except Exception:
+        pass
+
+    # Then try wide format
+    try:
+        return parse_wide_format(df)
+    except Exception:
+        pass
+
+    raise ValueError(
+        f"Unsupported CSV format in {path}. "
+        f"Columns found: {list(df.columns)}"
+    )
+
+
+def load_summary_results() -> pd.DataFrame:
+    baseline_path, bert_path = find_summary_file_paths()
+
+    baseline_df = parse_summary_file(baseline_path)
+    bert_df = parse_summary_file(bert_path)
+
+    combined = pd.concat([baseline_df, bert_df], ignore_index=True)
+
+    # Remove duplicate models if the same model appears twice
+    combined = combined.groupby("Model", as_index=False)[["Accuracy", "Precision", "Recall", "F1"]].max()
+
+    model_order = [
+        "Most Frequent Baseline",
+        "Naive Bayes",
+        "Logistic Regression",
+        "BERT",
+    ]
+
+    combined["Model"] = pd.Categorical(combined["Model"], categories=model_order, ordered=True)
+    combined = combined.sort_values("Model").reset_index(drop=True)
+
+    return combined
+
+
+# =========================
+# Error parsing
+# =========================
+def get_error_file_paths():
+    return {
+        "Most Frequent Baseline": find_existing_file([
+            os.path.join(CSV_DIR, "errors_most_frequent_test.csv"),
+            os.path.join(RESULTS_DIR, "errors_most_frequent_test.csv"),
+            os.path.join(PROJECT_ROOT, "errors_most_frequent_test.csv"),
+        ]),
+        "Naive Bayes": find_existing_file([
+            os.path.join(CSV_DIR, "errors_naive_bayes_test.csv"),
+            os.path.join(RESULTS_DIR, "errors_naive_bayes_test.csv"),
+            os.path.join(PROJECT_ROOT, "errors_naive_bayes_test.csv"),
+        ]),
+        "Logistic Regression": find_existing_file([
+            os.path.join(CSV_DIR, "errors_logistic_regression_test.csv"),
+            os.path.join(RESULTS_DIR, "errors_logistic_regression_test.csv"),
+            os.path.join(PROJECT_ROOT, "errors_logistic_regression_test.csv"),
+        ]),
+        "BERT": find_existing_file([
+            os.path.join(CSV_DIR, "errors_bert_test.csv"),
+            os.path.join(RESULTS_DIR, "errors_bert_test.csv"),
+            os.path.join(PROJECT_ROOT, "errors_bert_test.csv"),
+        ]),
     }
-    combined_df["model"] = combined_df["model"].replace(model_rename)
-
-    # convert metrics to numeric
-    for col in ["accuracy", "precision", "recall", "f1"]:
-        if col in combined_df.columns:
-            combined_df[col] = pd.to_numeric(combined_df[col], errors="coerce")
-
-    # drop empty rows
-    combined_df = combined_df.dropna(subset=["model"], how="any")
-
-    return combined_df
 
 
-def count_errors_from_file(file_path):
-    """
-    Count number of prediction errors in an errors csv.
-    """
-    if not os.path.exists(file_path):
-        return None
-    df = pd.read_csv(file_path)
-    return len(df)
-
-
-def load_error_counts():
-    """
-    Load error counts from error csv files.
-    """
-    error_files = {
-        "Most Frequent": "errors_most_frequent_test.csv",
-        "Naive Bayes": "errors_naive_bayes_test.csv",
-        "Logistic Regression": "errors_logistic_regression_test.csv",
-        "BERT": "errors_bert_test.csv",
-    }
+def load_error_counts() -> pd.DataFrame:
+    error_paths = get_error_file_paths()
 
     records = []
-    for model_name, filename in error_files.items():
-        path = os.path.join(RESULTS_DIR, filename)
-        count = count_errors_from_file(path)
-        if count is not None:
-            records.append({"model": model_name, "error_count": count})
+    for model_name, path in error_paths.items():
+        if path is None:
+            continue
+
+        df = pd.read_csv(path)
+        records.append({
+            "Model": model_name,
+            "ErrorCount": len(df),
+        })
 
     if not records:
-        return pd.DataFrame(columns=["model", "error_count"])
+        return pd.DataFrame()
 
-    return pd.DataFrame(records)
+    error_df = pd.DataFrame(records)
+
+    # if every file has exactly 100 rows, they are probably sample errors only
+    if (error_df["ErrorCount"] == 100).all():
+        print("All error CSV files contain exactly 100 rows. These appear to be sample errors only.")
+        print("Skipping error_count_comparison.png to avoid misleading totals.")
+        return pd.DataFrame()
+
+    model_order = [
+        "Most Frequent Baseline",
+        "Naive Bayes",
+        "Logistic Regression",
+        "BERT",
+    ]
+    error_df["Model"] = pd.Categorical(error_df["Model"], categories=model_order, ordered=True)
+    error_df = error_df.sort_values("Model").reset_index(drop=True)
+
+    return error_df
 
 
 # =========================
-# Plot Functions
+# Plot helpers
 # =========================
-def plot_metric_comparison(summary_df):
-    """
-    Grouped bar chart for Accuracy / Precision / Recall / F1 across models.
-    """
-    metrics = ["accuracy", "precision", "recall", "f1"]
-    available_metrics = [m for m in metrics if m in summary_df.columns and summary_df[m].notna().any()]
+def add_value_labels(ax, values, fmt="{:.4f}", y_offset=0.01):
+    for i, v in enumerate(values):
+        ax.text(i, v + y_offset, fmt.format(v), ha="center", va="bottom", fontsize=9)
 
-    if not available_metrics:
-        print("No usable metrics found for comparison plot.")
-        return
 
-    plot_df = summary_df.set_index("model")[available_metrics]
+# =========================
+# Plot functions
+# =========================
+def plot_metric_comparison(summary_df: pd.DataFrame):
+    plot_df = summary_df.set_index("Model")[["Accuracy", "Precision", "Recall", "F1"]]
 
     ax = plot_df.plot(kind="bar", figsize=(11, 6))
     plt.title("Model Performance Comparison")
@@ -199,64 +288,67 @@ def plot_metric_comparison(summary_df):
     save_path = os.path.join(PLOTS_DIR, "model_metric_comparison.png")
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close()
-
     print(f"Saved: {save_path}")
 
 
-def plot_f1_comparison(summary_df):
-    """
-    Simple bar chart for F1 only, useful for presentation.
-    """
-    if "f1" not in summary_df.columns or summary_df["f1"].isna().all():
-        print("No F1 column found.")
-        return
-
-    plot_df = summary_df[["model", "f1"]].dropna().sort_values(by="f1", ascending=False)
+def plot_f1_comparison(summary_df: pd.DataFrame):
+    plot_df = summary_df[["Model", "F1"]].sort_values("F1", ascending=False).reset_index(drop=True)
 
     plt.figure(figsize=(9, 5))
-    plt.bar(plot_df["model"], plot_df["f1"])
+    plt.bar(plot_df["Model"], plot_df["F1"])
     plt.title("F1 Score Comparison")
     plt.xlabel("Model")
     plt.ylabel("F1 Score")
     plt.ylim(0, 1.05)
     plt.xticks(rotation=15)
-
-    for i, value in enumerate(plot_df["f1"]):
-        plt.text(i, value + 0.01, f"{value:.3f}", ha="center")
-
+    add_value_labels(plt.gca(), plot_df["F1"].tolist(), fmt="{:.4f}", y_offset=0.01)
     plt.tight_layout()
+
     save_path = os.path.join(PLOTS_DIR, "f1_comparison.png")
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close()
-
     print(f"Saved: {save_path}")
 
 
-def plot_error_count_comparison(error_df):
-    """
-    Compare total number of misclassified samples for each model.
-    """
-    if error_df.empty:
-        print("No error files found or no error data available.")
-        return
-
-    error_df = error_df.sort_values(by="error_count", ascending=False)
+def plot_accuracy_comparison(summary_df: pd.DataFrame):
+    plot_df = summary_df[["Model", "Accuracy"]].sort_values("Accuracy", ascending=False).reset_index(drop=True)
 
     plt.figure(figsize=(9, 5))
-    plt.bar(error_df["model"], error_df["error_count"])
-    plt.title("Misclassification Count by Model")
+    plt.bar(plot_df["Model"], plot_df["Accuracy"])
+    plt.title("Accuracy Comparison")
     plt.xlabel("Model")
-    plt.ylabel("Number of Errors")
+    plt.ylabel("Accuracy")
+    plt.ylim(0, 1.05)
+    plt.xticks(rotation=15)
+    add_value_labels(plt.gca(), plot_df["Accuracy"].tolist(), fmt="{:.4f}", y_offset=0.01)
+    plt.tight_layout()
+
+    save_path = os.path.join(PLOTS_DIR, "accuracy_comparison.png")
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close()
+    print(f"Saved: {save_path}")
+
+
+def plot_error_count_comparison(error_df: pd.DataFrame):
+    if error_df.empty:
+        return
+
+    plt.figure(figsize=(9, 5))
+    plt.bar(error_df["Model"], error_df["ErrorCount"])
+    plt.title("Misclassification Count Comparison")
+    plt.xlabel("Model")
+    plt.ylabel("Number of Misclassified Test Samples")
     plt.xticks(rotation=15)
 
-    for i, value in enumerate(error_df["error_count"]):
-        plt.text(i, value + max(error_df["error_count"]) * 0.01, str(value), ha="center")
+    max_val = error_df["ErrorCount"].max()
+    for i, v in enumerate(error_df["ErrorCount"]):
+        plt.text(i, v + max_val * 0.01, str(v), ha="center", va="bottom", fontsize=9)
 
     plt.tight_layout()
+
     save_path = os.path.join(PLOTS_DIR, "error_count_comparison.png")
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close()
-
     print(f"Saved: {save_path}")
 
 
@@ -264,21 +356,24 @@ def plot_error_count_comparison(error_df):
 # Main
 # =========================
 def main():
-    print("Loading summary results...")
     summary_df = load_summary_results()
+
+    print("\nSummary results:")
     print(summary_df)
 
-    print("\nGenerating plots...")
     plot_metric_comparison(summary_df)
     plot_f1_comparison(summary_df)
+    plot_accuracy_comparison(summary_df)
 
     error_df = load_error_counts()
     if not error_df.empty:
         print("\nError counts:")
         print(error_df)
-    plot_error_count_comparison(error_df)
+        plot_error_count_comparison(error_df)
+    else:
+        print("\nNo full error-count plot generated.")
 
-    print(f"\nAll plots saved to: {PLOTS_DIR}")
+    print(f"\nPlots saved to: {PLOTS_DIR}")
 
 
 if __name__ == "__main__":
