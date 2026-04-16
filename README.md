@@ -151,6 +151,8 @@ Where:
 
 Common remaining BERT errors occurred in semantically overlapping categories:
 
+For readability, a representative subset of misclassified examples is shown below.
+
 ### Business ↔ Sci/Tech
 
 Shared vocabulary such as:
