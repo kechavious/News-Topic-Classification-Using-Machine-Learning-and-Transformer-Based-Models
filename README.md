@@ -1,4 +1,3 @@
-````md
 # 📰 News Topic Classification Using Machine Learning and Transformer-Based Models
 
 ---
