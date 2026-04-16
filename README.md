@@ -148,6 +148,7 @@ Where:
 ---
 
 ## 🔍 Error Analysis
+For readability, a representative subset of misclassified examples is shown below.
 
 Common remaining BERT errors occurred in semantically overlapping categories:
 
@@ -178,7 +179,8 @@ True Label: Business
 Predicted Label: Sci/Tech
 ````
 
-For readability, a representative subset of misclassified examples is shown below.
+
+
 ---
 
 ## 📁 Project Structure
