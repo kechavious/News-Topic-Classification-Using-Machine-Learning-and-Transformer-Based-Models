@@ -104,7 +104,9 @@ news-topic-classification/
 │   ├── baseline_models.py          # NB & Logistic Regression
 │   ├── bert_model.py               # BERT fine-tuning
 │   ├── utils.py                    # Data loading & preprocessing
-│   └── error_analysis.py           # Misclassification analysis
+│   ├── error_analysis.py           # Misclassification analysis
+│   └── plot_results.py
+|   
 │
 ├── results/
 │   ├── csv/                        # Evaluation results
@@ -116,7 +118,6 @@ news-topic-classification/
 ├── requirements.txt
 └── README.md
 ````
-
 ---
 
 ## ⚙️ Installation
