@@ -392,13 +392,6 @@ python src/plot.py
 
 ---
 
-## 👤 Author
-
-**Gordon Zou**
-GitHub: [https://github.com/kechavious](https://github.com/kechavious)
-
----
-
 ## 📄 License
 
 MIT License
