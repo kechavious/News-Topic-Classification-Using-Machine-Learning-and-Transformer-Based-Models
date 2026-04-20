@@ -401,7 +401,7 @@ Trained BERT checkpoints are not included in the repository due to file size lim
 ---
 
 ## 📄 License
-
+```
 MIT License
 
 Copyright (c) 2025 kangzheng Zou
@@ -424,7 +424,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-```
 ```
 
 
