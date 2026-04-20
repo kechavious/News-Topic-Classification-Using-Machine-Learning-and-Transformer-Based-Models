@@ -19,13 +19,13 @@
 
 ## 🔍 Motivation
 
-Text classification plays a critical role in organizing and understanding the massive volume of news content published daily.
+Text classification is essential for organizing the massive volume of online news content published every day.
 
-Traditional NLP approaches often rely on **bag-of-words** or **TF-IDF representations**, which can be effective but may struggle to capture semantic context and long-range dependencies.
+Traditional NLP methods such as **Bag-of-Words** and **TF-IDF** are computationally efficient and often strong baselines, but they may struggle to capture semantic meaning and contextual ambiguity.
 
-With the emergence of transformer-based models such as **BERT**, contextual embeddings enable substantially stronger language understanding.
+Transformer-based models such as **BERT** use contextual embeddings that better model word meaning based on surrounding tokens.
 
-This project evaluates the performance gap between traditional statistical classifiers and transformer-based neural models for multi-class news topic classification.
+This project evaluates how much performance improvement BERT provides over traditional machine learning approaches for multi-class news topic classification.
 
 ---
 
@@ -46,89 +46,51 @@ We use the **AG News Dataset**, a widely used benchmark for text classification.
 | 3 | Business |
 | 4 | Sci/Tech |
 
-### Dataset Size
+### Dataset Split
 
-- Training: ~108,000  
-- Validation: ~12,000  
-- Test: ~7,600  
+- Training Set: ~108,000  
+- Validation Set: ~12,000  
+- Test Set: ~7,600  
 
 The original AG News training split (120,000 samples) was partitioned into training and validation subsets using a fixed random seed.
 
-The validation split was used for model selection and hyperparameter tuning, while the official test set was reserved strictly for final evaluation.
+The validation set was used for model selection and hyperparameter tuning, while the official test set remained untouched until final evaluation.
 
 ---
 
 ## 🧪 Methodology
 
-### 1️⃣ Feature Representation
+### Traditional Machine Learning Models
 
-### 🔹 TF-IDF Representation
+Text was converted into **TF-IDF unigram + bigram features**, then evaluated using:
 
-$$
-\text{tfidf}(t,d)=\text{tf}(t,d)\cdot \log\left(\frac{N}{df(t)}\right)
-$$
+- Most Frequent Baseline
+- Multinomial Naive Bayes
+- Logistic Regression
 
-Where:
+### Transformer-Based Model
 
-- \( t \): term  
-- \( d \): document  
-- \( N \): total number of documents  
-- \( df(t) \): number of documents containing term \( t \)
+We fine-tuned:
 
----
+- `bert-base-uncased`
 
-### 🔹 Transformer Representation (BERT)
-
-Input sequence:
-
-$$
-X=(x_1,x_2,\dots,x_n)
-$$
-
-Contextual encoding:
-
-$$
-H=\text{BERT}(X)
-$$
-
-Classification output:
-
-$$
-\hat{y}=\arg\max \text{Softmax}(W h_{[CLS]})
-$$
-
-Where:
-
-- \( h_{[CLS]} \) is the sentence-level representation  
-- \( W \) is the learned classification layer
-
----
-
-### 2️⃣ Experimental Protocol
-
-All models were trained on the training split and evaluated on the held-out validation split during development.
-
-Final performance metrics were reported only once on the untouched test set.
-
-This ensures a fair comparison between traditional machine learning baselines and transformer-based models.
+Final classification is produced using the `[CLS]` token representation passed through a softmax layer.
 
 ---
 
 ## 🤖 Models Compared
 
-### Traditional Machine Learning
-
-- Most Frequent Baseline
-- Multinomial Naive Bayes
-- Logistic Regression (TF-IDF)
-
-### Transformer-Based Deep Learning
-
-- Fine-tuned `bert-base-uncased`
+| Category | Models |
+|---------|--------|
+| Baselines | Most Frequent |
+| Classical ML | Naive Bayes, Logistic Regression |
+| Deep Learning | BERT |
 
 ---
 
 ## 📊 Final Results
+
+All reported scores are evaluated on the held-out AG News **test set**.
 
 | Model | Accuracy | Precision | Recall | F1 Score |
 |------|----------|-----------|--------|----------|
@@ -159,33 +121,41 @@ This ensures a fair comparison between traditional machine learning baselines an
 
 Although Logistic Regression is a strong TF-IDF baseline, BERT achieved a clear improvement on the same held-out test set.
 
-The improvement is especially visible in semantically overlapping categories such as:
+The largest gains are concentrated in **semantically ambiguous categories**, rather than easy keyword-driven examples.
+
+Most common improvements occurred in:
 
 - **Business ↔ Sci/Tech**
 - **World ↔ Sports**
 
 This suggests that contextual embeddings help resolve ambiguity that sparse lexical features cannot fully capture.
 
-Rather than improving uniformly across all examples, BERT appears most beneficial where classification becomes semantically harder.
-
 ---
 
 ## 🔍 Error Analysis
 
-To strengthen qualitative analysis, we compared model predictions on the same test examples and inspected representative misclassifications.
+Rather than listing only the first 100 errors, we used a representative stratified sample grouped by confusion pair.
 
-Rather than simply listing the first 100 errors, we constructed a stratified sample grouped by confusion pair so that the selected examples reflect dominant error patterns.
+### Common Confusion Pairs
+
+| True Class | Predicted Class | Typical Cause |
+|-----------|----------------|--------------|
+| Business | Sci/Tech | Company / product overlap |
+| Sci/Tech | Business | Revenue / market wording |
+| World | Sports | International event ambiguity |
+
+---
 
 ### 1️⃣ Business ↔ Sci/Tech
 
-These categories often share vocabulary involving:
+These categories often share vocabulary such as:
 
 - Apple
 - AI
 - chips
+- launch
+- revenue
 - products
-- earnings
-- launches
 
 Example:
 
@@ -196,26 +166,19 @@ True Label: Business
 Predicted Label: Sci/Tech
 ````
 
-This type of headline mixes company, product, and financial signals.
+This mixes company, product, and financial signals.
 
 ---
 
 ### 2️⃣ World ↔ Sports
 
-International entities and events may blur the boundary between geopolitical and sports coverage.
-
-Examples include:
-
-* Olympic events
-* international teams
-* national federations
-* cross-border competitions
+International teams, Olympic events, and national organizations may blur the line between sports coverage and world news.
 
 ---
 
 ### 3️⃣ Short Headline Ambiguity
 
-Very short headlines often provide insufficient context, making classification difficult even for BERT.
+Very short headlines often lack enough context, making them difficult even for BERT.
 
 Examples:
 
@@ -225,17 +188,15 @@ Markets react to shock move.
 Leaders meet after crisis.
 ```
 
-Without surrounding context, multiple interpretations remain plausible.
-
 ---
 
-## 💡 Key Insights
+## 📌 Key Insights
 
 * Logistic Regression is a strong traditional baseline.
 * BERT achieved the best performance across all metrics.
-* The largest gains appear in overlapping categories rather than easy cases.
+* BERT improvements are concentrated in harder semantic cases.
 * Contextual embeddings improve robustness on ambiguous headlines.
-* Traditional TF-IDF models remain competitive with much lower computational cost.
+* Traditional TF-IDF models remain competitive with lower computational cost.
 
 ---
 
@@ -244,18 +205,18 @@ Without surrounding context, multiple interpretations remain plausible.
 * AG News is a relatively clean and balanced benchmark dataset.
 * Headlines are short and may lack sufficient context.
 * Training and testing come from the same benchmark distribution.
-* Reported BERT performance is based on a single run and may vary across random seeds.
-* Results may overestimate real-world performance on noisier news streams.
+* BERT results are based on a single run and may vary across random seeds.
+* Real-world noisy news streams may be more challenging.
 
 ---
 
 ## 🚀 Future Improvements
 
-* Compare additional transformer models such as RoBERTa and DistilBERT
-* Perform broader hyperparameter tuning
+* Compare RoBERTa, DistilBERT, and other transformer models
+* Broader hyperparameter tuning
 * Evaluate robustness under domain shift
 * Analyze which BERT layers carry classification signal
-* Build an interactive Streamlit demo for real-time classification
+* Build an interactive Streamlit demo
 
 ---
 
@@ -281,6 +242,7 @@ News-Topic-Classification/
 ├── presentation/
 │
 ├── requirements.txt
+├── LICENSE
 └── README.md
 ```
 
@@ -288,20 +250,20 @@ News-Topic-Classification/
 
 ## 🚀 Installation
 
-### 1. Clone Repository
+### Clone Repository
 
 ```bash
 git clone https://github.com/kechavious/News-Topic-Classification-Using-Machine-Learning-and-Transformer-Based-Models.git
 cd News-Topic-Classification-Using-Machine-Learning-and-Transformer-Based-Models
 ```
 
-### 2. Create Virtual Environment
+### Create Virtual Environment
 
 ```bash
 python -m venv venv
 ```
 
-### 3. Activate Environment
+### Activate Environment
 
 **Windows**
 
@@ -315,7 +277,7 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-### 4. Install Dependencies
+### Install Dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -376,18 +338,31 @@ python src/plot.py
 
 ---
 
-## Notes on Reproducibility
+## 🔁 Reproducibility Notes
 
-This repository includes the full training and evaluation pipeline, result summaries, plots, and error analysis outputs.
+This repository includes the full training pipeline, evaluation outputs, plots, and analysis scripts.
 
-Trained BERT checkpoints are not included in the repository due to file size limitations. To reproduce BERT results, run `python src/bert_model.py` locally.
+Trained BERT checkpoints are not included due to file size limitations.
+
+To reproduce BERT results locally:
+
+```bash
+python src/bert_model.py
+```
 
 ---
 
 ## 📘 Documentation
 
-* Final report: `writeup/report.pdf`
-* Presentation slides: `presentation/slides.pptx`
+* Final Report: `writeup/report.pdf`
+* Presentation Slides: `presentation/slides.pptx`
+
+---
+
+## 👤 Maintainer
+
+**Gordon Zou**
+GitHub: [https://github.com/kechavious](https://github.com/kechavious)
 
 ---
 
@@ -401,30 +376,9 @@ Trained BERT checkpoints are not included in the repository due to file size lim
 ---
 
 ## 📄 License
-```
-MIT License
 
-Copyright (c) 2025 kangzheng Zou
+This project is released under the MIT License. See `LICENSE` for details.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-```
 
 
 
