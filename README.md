@@ -376,6 +376,14 @@ python src/plot.py
 
 ---
 
+## Notes on Reproducibility
+
+This repository includes the full training and evaluation pipeline, result summaries, plots, and error analysis outputs.
+
+Trained BERT checkpoints are not included in the repository due to file size limitations. To reproduce BERT results, run `python src/bert_model.py` locally.
+
+---
+
 ## 📘 Documentation
 
 * Final report: `writeup/report.pdf`
