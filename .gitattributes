@@ -1,2 +1,123 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# ==================================================
+# News Topic Classification Project - .gitignore
+# Recommended for Python + BERT + Mac + VSCode + Jupyter
+# ==================================================
+
+# ------------------------------
+# Python cache / compiled files
+# ------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ------------------------------
+# Virtual environments
+# ------------------------------
+venv/
+.env/
+.venv/
+env/
+ENV/
+
+# ------------------------------
+# Jupyter Notebook
+# ------------------------------
+.ipynb_checkpoints/
+
+# ------------------------------
+# IDE / Editor files
+# ------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ------------------------------
+# macOS system files
+# ------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+__MACOSX/
+._*
+
+# ------------------------------
+# Logs / temp files
+# ------------------------------
+*.log
+*.tmp
+*.temp
+
+# ------------------------------
+# Python testing / coverage
+# ------------------------------
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ------------------------------
+# Build / packaging
+# ------------------------------
+build/
+dist/
+*.egg-info/
+
+# ------------------------------
+# Hugging Face / Transformers cache
+# ------------------------------
+.cache/
+huggingface/
+transformers_cache/
+
+# ------------------------------
+# PyTorch / Model Weights
+# ------------------------------
+*.pt
+*.pth
+*.bin
+*.ckpt
+*.safetensors
+
+# ------------------------------
+# BERT checkpoints / trained models
+# ------------------------------
+results/bert_checkpoints/
+checkpoints/
+models/
+saved_models/
+
+# ------------------------------
+# Large training outputs (optional)
+# Keep CSV + plots tracked, ignore only temp outputs
+# ------------------------------
+results/tmp/
+results/cache/
+
+# ------------------------------
+# Dataset files (if local copies exist)
+# Keep folder structure if needed
+# ------------------------------
+data/raw/
+data/downloads/
+*.zip
+*.tar.gz
+
+# ------------------------------
+# OS generated thumbnails
+# ------------------------------
+Thumbs.db
+ehthumbs.db
+
+# ------------------------------
+# Secrets / local configs
+# ------------------------------
+.env.local
+secrets.json
+credentials.json
+
+# ------------------------------
+# Misc
+# ------------------------------
+*.bak
+*.orig
