@@ -48,9 +48,15 @@ We use the **AG News Dataset**, a standard benchmark for text classification.
 
 ### Dataset Size
 
-- **Training:** ~108,000  
-- **Validation:** ~12,000  
-- **Test:** ~7,600
+- Training: ~108,000  
+- Validation: ~12,000  
+- Test: ~7,600  
+
+The original AG News training split (120,000 samples) was partitioned into
+108,000 training examples and 12,000 validation examples.
+
+The validation set was used for hyperparameter tuning and model selection,
+while the official test set was reserved strictly for final evaluation.
 
 ---
 
@@ -98,6 +104,14 @@ Where:
 - \( h_{[CLS]} \) is the sentence-level representation  
 - \( W \) is the learned classification matrix
 
+### 2️⃣ Experimental Protocol
+
+All models were trained on the training split and evaluated on the held-out
+validation split during development.
+
+Final performance metrics were reported only once on the untouched test set.
+
+
 ---
 
 ## 🤖 Models Compared
@@ -135,6 +149,7 @@ Where:
 ---
 
 ## 🔍 Error Analysis
+For readability, a representative subset of misclassified examples is shown below.
 
 Common remaining BERT errors occurred in semantically overlapping categories:
 
@@ -164,6 +179,8 @@ Apple reported strong quarterly revenue driven by iPhone sales.
 True Label: Business
 Predicted Label: Sci/Tech
 ````
+
+
 
 ---
 
