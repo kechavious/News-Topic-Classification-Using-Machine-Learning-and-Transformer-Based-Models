@@ -1,7 +1,7 @@
+import os
 import numpy as np
 import pandas as pd
 
-from datasets import load_dataset
 from transformers import (
     AutoTokenizer,
     AutoModelForSequenceClassification,
@@ -23,7 +23,11 @@ from utils import (
     load_ag_news_data,
     extract_text_and_labels,
 )
-from error_analysis import save_error_analysis, save_confusion_matrix_csv
+from error_analysis import (
+    save_error_analysis,
+    save_confusion_matrix_csv,
+    save_confusion_matrix_plot,
+)
 
 MODEL_NAME = "bert-base-uncased"
 
@@ -98,6 +102,8 @@ def evaluate_predictions(model_name: str, y_true, y_pred):
 
 def main():
     ensure_directories()
+    os.makedirs("results/csv", exist_ok=True)
+    os.makedirs("results/plots", exist_ok=True)
 
     train_set, dev_set, test_set = load_ag_news_data(dev_size=0.1)
 
@@ -172,20 +178,47 @@ def main():
     results.append(evaluate_predictions("BERT (Dev)", y_dev, dev_pred_labels))
     results.append(evaluate_predictions("BERT (Test)", y_test, test_pred_labels))
 
+    # Save full BERT error analysis
     save_error_analysis(
         X_test,
         y_test,
         test_pred_labels,
         "results/csv/errors_bert_test.csv",
+        max_examples=None,
     )
+
+    # Save confusion matrix CSV + plot
     save_confusion_matrix_csv(
         y_test,
         test_pred_labels,
         "results/csv/confusion_bert_test.csv",
     )
+    save_confusion_matrix_plot(
+        y_test,
+        test_pred_labels,
+        "results/plots/confusion_bert_test.png",
+        title="BERT Confusion Matrix (Test Set)",
+    )
+
+    # Save BERT test predictions for overlap analysis
+    bert_pred_df = pd.DataFrame({
+        "text": X_test,
+        "true_label_id": y_test,
+        "pred_label_id": test_pred_labels,
+    })
+    bert_pred_df.to_csv(
+        "results/csv/bert_test_predictions.csv",
+        index=False,
+        encoding="utf-8-sig",
+    )
+    print("Saved results/csv/bert_test_predictions.csv")
 
     results_df = pd.DataFrame(results)
-    results_df.to_csv("results/csv/bert_results_summary.csv", index=False, encoding="utf-8-sig")
+    results_df.to_csv(
+        "results/csv/bert_results_summary.csv",
+        index=False,
+        encoding="utf-8-sig",
+    )
 
     print("\nSaved BERT summary to results/csv/bert_results_summary.csv")
     print(results_df)

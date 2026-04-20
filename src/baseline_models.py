@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 from collections import Counter
 
@@ -18,7 +19,11 @@ from utils import (
     load_ag_news_data,
     extract_text_and_labels,
 )
-from error_analysis import save_error_analysis, save_confusion_matrix_csv
+from error_analysis import (
+    save_error_analysis,
+    save_confusion_matrix_csv,
+    save_confusion_matrix_plot,
+)
 
 
 class MostFrequentBaseline:
@@ -75,6 +80,8 @@ def evaluate_model(model_name: str, y_true, y_pred):
 
 def main():
     ensure_directories()
+    os.makedirs("results/csv", exist_ok=True)
+    os.makedirs("results/plots", exist_ok=True)
 
     train_set, dev_set, test_set = load_ag_news_data(dev_size=0.1)
 
@@ -110,11 +117,18 @@ def main():
         y_test,
         test_pred_baseline,
         "results/csv/errors_most_frequent_test.csv",
+        max_examples=None,
     )
     save_confusion_matrix_csv(
         y_test,
         test_pred_baseline,
         "results/csv/confusion_most_frequent_test.csv",
+    )
+    save_confusion_matrix_plot(
+        y_test,
+        test_pred_baseline,
+        "results/plots/confusion_most_frequent_test.png",
+        title="Most Frequent Baseline Confusion Matrix (Test Set)",
     )
 
     # 2. Naive Bayes
@@ -132,11 +146,18 @@ def main():
         y_test,
         test_pred_nb,
         "results/csv/errors_naive_bayes_test.csv",
+        max_examples=None,
     )
     save_confusion_matrix_csv(
         y_test,
         test_pred_nb,
         "results/csv/confusion_naive_bayes_test.csv",
+    )
+    save_confusion_matrix_plot(
+        y_test,
+        test_pred_nb,
+        "results/plots/confusion_naive_bayes_test.png",
+        title="Naive Bayes Confusion Matrix (Test Set)",
     )
 
     # 3. Logistic Regression
@@ -157,15 +178,39 @@ def main():
         y_test,
         test_pred_lr,
         "results/csv/errors_logistic_regression_test.csv",
+        max_examples=None,
     )
     save_confusion_matrix_csv(
         y_test,
         test_pred_lr,
         "results/csv/confusion_logistic_regression_test.csv",
     )
+    save_confusion_matrix_plot(
+        y_test,
+        test_pred_lr,
+        "results/plots/confusion_logistic_regression_test.png",
+        title="Logistic Regression Confusion Matrix (Test Set)",
+    )
+
+    # Save LR test predictions for overlap analysis
+    lr_pred_df = pd.DataFrame({
+        "text": X_test,
+        "true_label_id": y_test,
+        "pred_label_id": test_pred_lr,
+    })
+    lr_pred_df.to_csv(
+        "results/csv/lr_test_predictions.csv",
+        index=False,
+        encoding="utf-8-sig",
+    )
+    print("Saved results/csv/lr_test_predictions.csv")
 
     results_df = pd.DataFrame(results)
-    results_df.to_csv("results/csv/model_results_summary.csv", index=False, encoding="utf-8-sig")
+    results_df.to_csv(
+        "results/csv/model_results_summary.csv",
+        index=False,
+        encoding="utf-8-sig",
+    )
 
     print("\nSaved model summary to results/csv/model_results_summary.csv")
     print(results_df)
