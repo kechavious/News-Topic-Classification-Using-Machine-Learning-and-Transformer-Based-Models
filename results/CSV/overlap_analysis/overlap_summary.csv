@@ -1,0 +1,5 @@
+﻿case,count
+Both correct,6862
+Both wrong,322
+LR wrong / BERT correct,301
+BERT wrong / LR correct,115
