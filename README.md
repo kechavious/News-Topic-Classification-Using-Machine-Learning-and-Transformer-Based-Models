@@ -11,7 +11,7 @@
 ## 👥 Team Members
 
 - **George Liu**
-- **Gordon Zou**
+- **Gordon Zau**
 - **Louis Dong**
 - **Zhiqi Zhou**
 
