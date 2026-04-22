@@ -361,7 +361,7 @@ python src/bert_model.py
 
 ## 👤 Maintainer
 
-**Gordon Zou**
+**Gordon Zau**
 GitHub: [https://github.com/kechavious](https://github.com/kechavious)
 
 ---
