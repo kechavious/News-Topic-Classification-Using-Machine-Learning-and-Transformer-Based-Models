@@ -52,13 +52,15 @@ We use the **AG News Dataset**, a widely used benchmark for text classification.
 - Validation Set: 12,000
 - Test Set: 7,600 (official AG News test set)
 
-**Split procedure.** The 120,000 AG News training examples were partitioned with `datasets.train_test_split(test_size=0.1, seed=42)` — a random (non-stratified) split producing 108,000 training and 12,000 validation examples. The official 7,600-example AG News test set was left untouched throughout development and used only once, for the final evaluation reported below.
-
-**Usage.** The validation set was used for model selection and hyperparameter tuning. No test-set information influenced modeling decisions.
-
 ---
 
 ## 🧪 Methodology
+
+### Data Split Procedure
+
+The 120,000 AG News training examples were partitioned with `datasets.train_test_split(test_size=0.1, seed=42, stratify_by_column="label")`, producing a label-stratified split of 108,000 training and 12,000 validation examples. The official 7,600-example AG News test set was left untouched throughout development and used only once, for the final evaluation reported below.
+
+The validation set was used for model selection and hyperparameter tuning. No test-set information influenced modeling decisions.
 
 ### Traditional Machine Learning Models
 
@@ -324,6 +326,8 @@ This repository includes the full training pipeline, evaluation outputs, plots, 
 
 Trained BERT checkpoints are not included due to file size limitations.
 
+Dependency versions are pinned in `requirements.txt`, and each training script writes an experiment configuration JSON into `results/csv/` so the dataset split, hyperparameters, and package versions used for a run are recorded alongside the metrics.
+
 To reproduce BERT results locally:
 
 ```bash
@@ -334,8 +338,7 @@ python src/bert_model.py
 
 ## 📘 Documentation
 
-* Final Report: `writeup/report.pdf`
-* Presentation Slides: `presentation/slides.pptx`
+This repository currently includes the README, source code, saved CSV results, and generated plots. Final report and presentation files are not included in the repository.
 
 ---
 
@@ -358,11 +361,6 @@ GitHub: [https://github.com/kechavious](https://github.com/kechavious)
 ## 📄 License
 
 This project is released under the MIT License. See `LICENSE` for details.
-
-
-
-
-
 
 
 

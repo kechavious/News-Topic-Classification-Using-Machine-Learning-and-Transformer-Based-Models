@@ -18,6 +18,8 @@ from utils import (
     ensure_directories,
     load_ag_news_data,
     extract_text_and_labels,
+    get_package_versions,
+    save_experiment_config,
 )
 from error_analysis import (
     save_error_analysis,
@@ -83,7 +85,8 @@ def main():
     os.makedirs("results/csv", exist_ok=True)
     os.makedirs("results/plots", exist_ok=True)
 
-    train_set, dev_set, test_set = load_ag_news_data(dev_size=0.1)
+    dev_size = 0.1
+    train_set, dev_set, test_set = load_ag_news_data(dev_size=dev_size)
 
     X_train, y_train = extract_text_and_labels(train_set)
     X_dev, y_dev = extract_text_and_labels(dev_set)
@@ -94,6 +97,44 @@ def main():
         stop_words="english",
         max_features=20000,
         ngram_range=(1, 2),
+    )
+
+    save_experiment_config(
+        "results/csv/baseline_experiment_config.json",
+        {
+            "script": "src/baseline_models.py",
+            "seed": SEED,
+            "dataset": {
+                "name": "ag_news",
+                "train_size": len(train_set),
+                "dev_size": len(dev_set),
+                "test_size": len(test_set),
+                "dev_split_fraction": dev_size,
+                "dev_split_strategy": "stratified by label",
+            },
+            "models": [
+                "Most Frequent Baseline",
+                "Naive Bayes",
+                "Logistic Regression",
+            ],
+            "feature_extraction": {
+                "type": "tfidf",
+                "lowercase": True,
+                "stop_words": "english",
+                "max_features": 20000,
+                "ngram_range": [1, 2],
+            },
+            "model_hyperparameters": {
+                "naive_bayes": {},
+                "logistic_regression": {
+                    "max_iter": 2000,
+                    "random_state": SEED,
+                },
+            },
+            "package_versions": get_package_versions(
+                ["numpy", "pandas", "scikit-learn", "datasets", "matplotlib"]
+            ),
+        },
     )
 
     X_train_tfidf = vectorizer.fit_transform(X_train)

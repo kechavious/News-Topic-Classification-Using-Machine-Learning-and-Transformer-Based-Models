@@ -22,6 +22,8 @@ from utils import (
     ensure_directories,
     load_ag_news_data,
     extract_text_and_labels,
+    get_package_versions,
+    save_experiment_config,
 )
 from error_analysis import (
     save_error_analysis,
@@ -105,7 +107,8 @@ def main():
     os.makedirs("results/csv", exist_ok=True)
     os.makedirs("results/plots", exist_ok=True)
 
-    train_set, dev_set, test_set = load_ag_news_data(dev_size=0.1)
+    dev_size = 0.1
+    train_set, dev_set, test_set = load_ag_news_data(dev_size=dev_size)
 
     X_train, y_train = extract_text_and_labels(train_set)
     X_dev, y_dev = extract_text_and_labels(dev_set)
@@ -153,6 +156,53 @@ def main():
         load_best_model_at_end=True,
         report_to="none",
         seed=SEED,
+    )
+
+    save_experiment_config(
+        "results/csv/bert_experiment_config.json",
+        {
+            "script": "src/bert_model.py",
+            "seed": SEED,
+            "dataset": {
+                "name": "ag_news",
+                "train_size": len(train_set),
+                "dev_size": len(dev_set),
+                "test_size": len(test_set),
+                "dev_split_fraction": dev_size,
+                "dev_split_strategy": "stratified by label",
+            },
+            "model": {
+                "base_model": MODEL_NAME,
+                "num_labels": 4,
+                "tokenizer_max_length": 128,
+            },
+            "training_arguments": {
+                "output_dir": training_args.output_dir,
+                "eval_strategy": str(training_args.eval_strategy),
+                "save_strategy": str(training_args.save_strategy),
+                "logging_strategy": str(training_args.logging_strategy),
+                "learning_rate": training_args.learning_rate,
+                "per_device_train_batch_size": training_args.per_device_train_batch_size,
+                "per_device_eval_batch_size": training_args.per_device_eval_batch_size,
+                "num_train_epochs": training_args.num_train_epochs,
+                "weight_decay": training_args.weight_decay,
+                "load_best_model_at_end": training_args.load_best_model_at_end,
+                "report_to": training_args.report_to,
+                "seed": training_args.seed,
+            },
+            "package_versions": get_package_versions(
+                [
+                    "numpy",
+                    "pandas",
+                    "scikit-learn",
+                    "datasets",
+                    "transformers",
+                    "torch",
+                    "accelerate",
+                    "matplotlib",
+                ]
+            ),
+        },
     )
 
     trainer = Trainer(

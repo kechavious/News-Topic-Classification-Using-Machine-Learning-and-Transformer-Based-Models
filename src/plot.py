@@ -125,6 +125,9 @@ def parse_wide_format(df: pd.DataFrame) -> pd.DataFrame:
     Expected columns like:
       Model, Accuracy, Precision, Recall, F1
     or lowercase variants.
+
+    If split-tagged rows such as "(Dev)" and "(Test)" are present, keep only
+    the test rows so plots reflect the final held-out evaluation.
     """
     df = clean_columns(df)
 
@@ -138,6 +141,11 @@ def parse_wide_format(df: pd.DataFrame) -> pd.DataFrame:
 
     if not model_col or not accuracy_col or not precision_col or not recall_col or not f1_col:
         raise ValueError("Not wide format")
+
+    model_names = df[model_col].astype(str)
+    test_mask = model_names.str.contains(r"\(Test\)", regex=True, na=False)
+    if test_mask.any():
+        df = df[test_mask].copy()
 
     out = pd.DataFrame({
         "Model": df[model_col].apply(standardize_model_name),
@@ -329,6 +337,59 @@ def plot_accuracy_comparison(summary_df: pd.DataFrame):
     print(f"Saved: {save_path}")
 
 
+def plot_overlap_comparison():
+    overlap_path = find_existing_file([
+        os.path.join(CSV_DIR, "overlap_analysis", "overlap_summary.csv"),
+        os.path.join(RESULTS_DIR, "overlap_analysis", "overlap_summary.csv"),
+    ])
+
+    if overlap_path is None:
+        print("Skipping overlap plot: overlap_summary.csv not found.")
+        return
+
+    df = pd.read_csv(overlap_path)
+    if "case" not in df.columns or "count" not in df.columns:
+        print("Skipping overlap plot: unexpected columns in overlap_summary.csv.")
+        return
+
+    case_order = [
+        "Both correct",
+        "LR wrong / BERT correct",
+        "BERT wrong / LR correct",
+        "Both wrong",
+    ]
+    colors = ["#4CAF50", "#2196F3", "#FF9800", "#F44336"]
+
+    df["case"] = pd.Categorical(df["case"], categories=case_order, ordered=True)
+    df = df.sort_values("case").reset_index(drop=True)
+
+    total = df["count"].sum()
+    df["pct"] = df["count"] / total * 100
+
+    fig, ax = plt.subplots(figsize=(9, 5))
+    bars = ax.bar(df["case"], df["count"], color=colors)
+
+    for bar, count, pct in zip(bars, df["count"], df["pct"]):
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + total * 0.005,
+            f"{count:,}\n({pct:.1f}%)",
+            ha="center", va="bottom", fontsize=9,
+        )
+
+    ax.set_title("LR vs BERT Error Overlap (Test Set)")
+    ax.set_xlabel("Case")
+    ax.set_ylabel("Number of Examples")
+    ax.set_ylim(0, df["count"].max() * 1.15)
+    plt.xticks(rotation=10)
+    plt.tight_layout()
+
+    save_path = os.path.join(PLOTS_DIR, "lr_bert_overlap_comparison.png")
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close()
+    print(f"Saved: {save_path}")
+
+
 def plot_error_count_comparison(error_df: pd.DataFrame):
     if error_df.empty:
         return
@@ -364,6 +425,7 @@ def main():
     plot_metric_comparison(summary_df)
     plot_f1_comparison(summary_df)
     plot_accuracy_comparison(summary_df)
+    plot_overlap_comparison()
 
     error_df = load_error_counts()
     if not error_df.empty:

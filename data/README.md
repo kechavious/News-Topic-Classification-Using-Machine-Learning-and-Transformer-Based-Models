@@ -14,4 +14,5 @@ The dataset is automatically downloaded when running:
 ```bash
 python src/baseline_models.py
 python src/bert_model.py
-python src/plot_results.py
+python src/plot.py
+```
