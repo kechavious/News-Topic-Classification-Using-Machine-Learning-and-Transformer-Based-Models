@@ -39,22 +39,22 @@ This project evaluates how much performance improvement BERT provides over tradi
 
 We use the **AG News Dataset**, a widely used benchmark for text classification.
 
-| Label | Category |
+| Label ID | Category |
 |------|----------|
-| 1 | World |
-| 2 | Sports |
-| 3 | Business |
-| 4 | Sci/Tech |
+| 0 | World |
+| 1 | Sports |
+| 2 | Business |
+| 3 | Sci/Tech |
 
 ### Dataset Split
 
-- Training Set: ~108,000  
-- Validation Set: ~12,000  
-- Test Set: ~7,600  
+- Training Set: 108,000
+- Validation Set: 12,000
+- Test Set: 7,600 (official AG News test set)
 
-The original AG News training split (120,000 samples) was partitioned into training and validation subsets using a fixed random seed.
+**Split procedure.** The 120,000 AG News training examples were partitioned with `datasets.train_test_split(test_size=0.1, seed=42)` — a random (non-stratified) split producing 108,000 training and 12,000 validation examples. The official 7,600-example AG News test set was left untouched throughout development and used only once, for the final evaluation reported below.
 
-The validation set was used for model selection and hyperparameter tuning, while the official test set remained untouched until final evaluation.
+**Usage.** The validation set was used for model selection and hyperparameter tuning. No test-set information influenced modeling decisions.
 
 ---
 
@@ -95,9 +95,9 @@ All reported scores are evaluated on the held-out AG News **test set**.
 | Model | Accuracy | Precision | Recall | F1 Score |
 |------|----------|-----------|--------|----------|
 | Most Frequent Baseline | 0.2500 | 0.0625 | 0.2500 | 0.1000 |
-| Naive Bayes | 0.9024 | 0.9024 | 0.9024 | 0.9024 |
-| Logistic Regression | 0.9180 | 0.9180 | 0.9180 | 0.9180 |
-| **BERT** | **0.9487** | **0.9487** | **0.9487** | **0.9487** |
+| Naive Bayes | 0.9024 | 0.9019 | 0.9024 | 0.9019 |
+| Logistic Regression | 0.9180 | 0.9178 | 0.9180 | 0.9178 |
+| **BERT** | **0.9425** | **0.9424** | **0.9425** | **0.9424** |
 
 ---
 
@@ -117,76 +117,56 @@ All reported scores are evaluated on the held-out AG News **test set**.
 
 ---
 
-## ⚔️ Logistic Regression vs BERT
+## ⚔️ Where the BERT Advantage Lives
 
-Although Logistic Regression is a strong TF-IDF baseline, BERT achieved a clear improvement on the same held-out test set.
+On the 7,600-example test set, both models were scored on the same inputs. Comparing their predictions gives a sharper picture than accuracy numbers alone:
 
-The largest gains are concentrated in **semantically ambiguous categories**, rather than easy keyword-driven examples.
+| Case | Count | Share of test set |
+|---|---|---|
+| Both correct | 6,862 | 90.3% |
+| LR wrong / BERT correct | 301 | 4.0% |
+| BERT wrong / LR correct | 115 | 1.5% |
+| Both wrong | 322 | 4.2% |
 
-Most common improvements occurred in:
+BERT flips 301 LR errors to correct predictions and loses 115 in the other direction. The **net +186 flips** account for ~2.45% of the test set — essentially the entire ~3% accuracy gap between the two models.
 
-- **Business ↔ Sci/Tech**
-- **World ↔ Sports**
+### Where BERT pulls ahead
 
-This suggests that contextual embeddings help resolve ambiguity that sparse lexical features cannot fully capture.
+The 301 LR→BERT wins cluster in semantically overlapping pairs:
 
----
+| Confusion pair (LR's error) | Count |
+|---|---|
+| Sci/Tech → Business | 56 |
+| Business → Sci/Tech | 44 |
+| Business → World | 40 |
+| World → Sports | 38 |
+| World → Business | 31 |
+| World → Sci/Tech | 25 |
 
-## 🔍 Error Analysis
+Four real examples LR got wrong and BERT got right:
 
-Rather than listing only the first 100 errors, we used a representative stratified sample grouped by confusion pair.
+- **`IBM to hire even more new workers. By the end of the year, the computing giant plans to have its biggest headcount since 1991.`** — true *Sci/Tech*. LR → Business (fooled by "hire/workers/headcount"); BERT → Sci/Tech.
+- **`Justices to debate mail-order wine...`** — true *Business* (commerce regulation). LR → Sci/Tech; BERT → Business.
+- **`Live: Olympics day four. Richard Faulds and Stephen Parry are going for gold for Great Britain in Athens.`** — true *World* (international event). LR → Sports (keyword "gold/Olympics"); BERT → World.
+- **`India's Tata expands regional footprint via NatSteel buyout.`** — true *World*. LR → Business (M&A vocabulary); BERT → World.
 
-### Common Confusion Pairs
+These failures have a common shape: LR latches onto lexical cues ("workers", "gold", "buyout") that co-occur with one class in training, while BERT's contextual embeddings weigh the surrounding words. This is the same reason contextual models separate *Apple (company)* from *apple (fruit)* — the meaning of a token depends on its neighbors, not just its identity.
 
-| True Class | Predicted Class | Typical Cause |
-|-----------|----------------|--------------|
-| Business | Sci/Tech | Company / product overlap |
-| Sci/Tech | Business | Revenue / market wording |
-| World | Sports | International event ambiguity |
+### Where BERT still struggles
 
----
+BERT is not immune to semantic overlap. Its remaining errors concentrate in the same pair LR struggles with:
 
-### 1️⃣ Business ↔ Sci/Tech
+| Both-wrong confusion pair | Count |
+|---|---|
+| Business ↔ Sci/Tech (combined) | 164 |
+| World ↔ Business (combined) | 62 |
+| Sci/Tech ↔ World (combined) | 57 |
 
-These categories often share vocabulary such as:
+Tech companies with earnings-driven coverage and geopolitical stories with economic framing remain genuinely ambiguous — the categories themselves overlap in the source news.
 
-- Apple
-- AI
-- chips
-- launch
-- revenue
-- products
+### An honest negative result
 
-Example:
-
-```text
-Apple reported strong quarterly revenue driven by iPhone sales.
-
-True Label: Business
-Predicted Label: Sci/Tech
-````
-
-This mixes company, product, and financial signals.
-
----
-
-### 2️⃣ World ↔ Sports
-
-International teams, Olympic events, and national organizations may blur the line between sports coverage and world news.
-
----
-
-### 3️⃣ Short Headline Ambiguity
-
-Very short headlines often lack enough context, making them difficult even for BERT.
-
-Examples:
-
-```text
-Champions advance after upset.
-Markets react to shock move.
-Leaders meet after crisis.
-```
+We checked whether BERT's wins were driven by headline length. They aren't. Median word count is ≈36 for the full test set, for BERT-correct items, for BERT-errors, and for the LR-wrong/BERT-right set. Length is not a useful discriminator here; BERT's advantage is semantic, not structural.
 
 ---
 
@@ -202,11 +182,11 @@ Leaders meet after crisis.
 
 ## ⚠️ Limitations
 
-* AG News is a relatively clean and balanced benchmark dataset.
-* Headlines are short and may lack sufficient context.
-* Training and testing come from the same benchmark distribution.
-* BERT results are based on a single run and may vary across random seeds.
-* Real-world noisy news streams may be more challenging.
+* **Single run, no seed variance.** All reported numbers come from one training run. We did not sweep seeds, so the reported BERT/LR gap does not include a confidence interval.
+* **Clean, balanced benchmark.** AG News has evenly sized classes, curated headlines, and minimal noise. Real-world news streams are messier.
+* **Short-headline regime.** Inputs are ~36 words on average. Conclusions may not transfer to longer articles where more context is available.
+* **Same-distribution eval.** Training and test come from the same AG News distribution. We did not evaluate under domain shift (e.g., a different news source, a different time period).
+* **No calibration analysis.** We report accuracy/F1 but did not study predicted-probability calibration.
 
 ---
 
