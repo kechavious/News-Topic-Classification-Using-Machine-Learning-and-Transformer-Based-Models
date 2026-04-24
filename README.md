@@ -210,25 +210,33 @@ Possible extensions include:
 
 ```text
 News-Topic-Classification/
-|
-|-- data/
-|   `-- README.md
-|
-|-- src/
-|   |-- baseline_models.py
-|   |-- bert_model.py
-|   |-- error_analysis.py
-|   |-- overlap_analysis.py
-|   |-- plot.py
-|   `-- utils.py
-|
-|-- results/
-|   |-- csv/
-|   `-- plots/
-|
-|-- requirements.txt
-|-- LICENSE
-`-- README.md
+│
+├── data/
+│   └── README.md
+│
+├── src/
+│   ├── baseline_models.py
+│   ├── bert_model.py
+│   ├── error_analysis.py
+│   ├── overlap_analysis.py
+│   ├── plot.py
+│   └── utils.py
+│
+├── results/
+│   ├── csv/
+│   └── plots/
+│
+├── writeup/
+│   ├── report.pdf
+│   └── final_paper.tex       
+│
+├── presentation/
+│   ├── slides.pptx
+│   └── presentation.pdf     
+│
+├── requirements.txt
+├── LICENSE
+└── README.md
 ```
 
 ---
