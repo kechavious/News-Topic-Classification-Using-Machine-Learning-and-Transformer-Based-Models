@@ -1,109 +1,108 @@
-# 📰 News Topic Classification Using Machine Learning and Transformer-Based Models
+# News Topic Classification Using Machine Learning and BERT
 
 ![Python](https://img.shields.io/badge/Python-3.10-blue)
 ![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-ML-orange)
-![PyTorch](https://img.shields.io/badge/PyTorch-DeepLearning-red)
+![PyTorch](https://img.shields.io/badge/PyTorch-Deep%20Learning-red)
 ![HuggingFace](https://img.shields.io/badge/Transformers-BERT-yellow)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
----
+This project compares traditional TF-IDF-based machine learning models with a fine-tuned BERT model on the AG News dataset.
 
-## 👥 Team Members
-
-- **George Liu**
-- **Gordon Zau**
-- **Louis Dong**
-- **Zhiqi Zhou**
+The main goal was not only to measure whether BERT performs better, but also to understand where that improvement appears. In particular, we wanted to see whether BERT helps most on news examples where the topic is not obvious from keywords alone.
 
 ---
 
-## 🔍 Motivation
+## Team Members
 
-Text classification is essential for organizing the massive volume of online news content published every day.
-
-Traditional NLP methods such as **Bag-of-Words** and **TF-IDF** are computationally efficient and often strong baselines, but they may struggle to capture semantic meaning and contextual ambiguity.
-
-Transformer-based models such as **BERT** use contextual embeddings that better model word meaning based on surrounding tokens.
-
-This project evaluates how much performance improvement BERT provides over traditional machine learning approaches for multi-class news topic classification.
+- George Liu
+- Gordon Zau
+- Louis Dong
+- Zhiqi Zhou
 
 ---
 
-## 🧠 Research Question
+## Research Question
 
-> **How much improvement does a transformer-based model (BERT) provide over traditional TF-IDF-based classifiers for news topic classification?**
+**How much does a transformer-based model like BERT improve news topic classification compared with traditional TF-IDF-based classifiers?**
 
 ---
 
-## 📂 Dataset
+## Dataset
 
-We use the **AG News Dataset**, a widely used benchmark for text classification.
+We used the **AG News Dataset**, a common benchmark dataset for text classification. Each example is a short news headline or description labeled as one of four topics.
 
 | Label ID | Category |
-|------|----------|
-| 0 | World |
-| 1 | Sports |
-| 2 | Business |
-| 3 | Sci/Tech |
+| -------- | -------- |
+| 0        | World    |
+| 1        | Sports   |
+| 2        | Business |
+| 3        | Sci/Tech |
 
 ### Dataset Split
 
-- Training Set: 108,000
-- Validation Set: 12,000
-- Test Set: 7,600 (official AG News test set)
+| Split      |    Size |
+| ---------- | ------: |
+| Training   | 108,000 |
+| Validation |  12,000 |
+| Test       |   7,600 |
 
 ---
 
-## 🧪 Methodology
+## Methods
+
+We compared three traditional models with one transformer-based model.
 
 ### Data Split Procedure
 
-The 120,000 AG News training examples were partitioned with `datasets.train_test_split(test_size=0.1, seed=42, stratify_by_column="label")`, producing a label-stratified split of 108,000 training and 12,000 validation examples. The official 7,600-example AG News test set was left untouched throughout development and used only once, for the final evaluation reported below.
+The original AG News training set contains 120,000 examples. We split it into 108,000 training examples and 12,000 validation examples with `datasets.train_test_split(test_size=0.1, seed=42, stratify_by_column="label")`, which kept the class distribution balanced across the split.
 
-The validation set was used for model selection and hyperparameter tuning. No test-set information influenced modeling decisions.
+The validation set was used for model selection and hyperparameter tuning. The official 7,600-example AG News test set was kept separate during development and used only for the final evaluation.
 
 ### Traditional Machine Learning Models
 
-Text was converted into **TF-IDF unigram + bigram features**, then evaluated using:
+For the traditional models, text was converted into **TF-IDF unigram and bigram features**. These features were used to train:
 
 - Most Frequent Baseline
 - Multinomial Naive Bayes
 - Logistic Regression
 
-### Transformer-Based Model
+The most frequent baseline gives a simple lower-bound comparison, while Naive Bayes and Logistic Regression are common starting points for text classification.
 
-We fine-tuned:
+### BERT Model
 
-- `bert-base-uncased`
+We fine-tuned `bert-base-uncased` for four-class classification. BERT represents tokens based on surrounding context, which can help when news topics overlap or when individual keywords are misleading.
 
-Final classification is produced using the `[CLS]` token representation passed through a softmax layer.
-
----
-
-## 🤖 Models Compared
-
-| Category | Models |
-|---------|--------|
-| Baselines | Most Frequent |
-| Classical ML | Naive Bayes, Logistic Regression |
-| Deep Learning | BERT |
+Due to time and compute limits, we trained one BERT configuration rather than running a large hyperparameter search.
 
 ---
 
-## 📊 Final Results
+## Models Compared
 
-All reported scores are evaluated on the held-out AG News **test set**.
-
-| Model | Accuracy | Precision | Recall | F1 Score |
-|------|----------|-----------|--------|----------|
-| Most Frequent Baseline | 0.2500 | 0.0625 | 0.2500 | 0.1000 |
-| Naive Bayes | 0.9024 | 0.9019 | 0.9024 | 0.9019 |
-| Logistic Regression | 0.9180 | 0.9178 | 0.9180 | 0.9178 |
-| **BERT** | **0.9425** | **0.9424** | **0.9425** | **0.9424** |
+| Category     | Model                      |
+| ------------ | -------------------------- |
+| Baseline     | Most Frequent              |
+| Classical ML | Multinomial Naive Bayes    |
+| Classical ML | Logistic Regression        |
+| Transformer  | BERT (`bert-base-uncased`) |
 
 ---
 
-## 📈 Performance Visualizations
+## Results
+
+All scores below were evaluated on the held-out AG News test set.
+
+| Model                  | Accuracy | Precision | Recall | F1 Score |
+| ---------------------- | -------: | --------: | -----: | -------: |
+| Most Frequent Baseline |   0.2500 |    0.0625 | 0.2500 |   0.1000 |
+| Naive Bayes            |   0.9024 |    0.9019 | 0.9024 |   0.9019 |
+| Logistic Regression    |   0.9180 |    0.9178 | 0.9180 |   0.9178 |
+| **BERT**               | **0.9425** | **0.9424** | **0.9425** | **0.9424** |
+
+BERT achieved the highest score across all metrics. At the same time, Logistic Regression was a strong baseline, reaching over 91% accuracy with a simpler and cheaper model.
+
+---
+
+## Visualizations
 
 ### Overall Model Comparison
 
@@ -111,7 +110,7 @@ All reported scores are evaluated on the held-out AG News **test set**.
 
 ### Logistic Regression Confusion Matrix
 
-![LR Confusion Matrix](results/plots/confusion_logistic_regression_test.png)
+![Logistic Regression Confusion Matrix](results/plots/confusion_logistic_regression_test.png)
 
 ### BERT Confusion Matrix
 
@@ -119,141 +118,145 @@ All reported scores are evaluated on the held-out AG News **test set**.
 
 ---
 
-## ⚔️ Where the BERT Advantage Lives
+## Error Analysis: BERT vs. Logistic Regression
 
-On the 7,600-example test set, both models were scored on the same inputs. Comparing their predictions gives a sharper picture than accuracy numbers alone:
+To understand the difference between Logistic Regression and BERT more directly, we compared their predictions on the same 7,600 test examples.
 
-| Case | Count | Share of test set |
-|---|---|---|
-| Both correct | 6,862 | 90.3% |
-| LR wrong / BERT correct | 301 | 4.0% |
-| BERT wrong / LR correct | 115 | 1.5% |
-| Both wrong | 322 | 4.2% |
+| Case                                     | Count | Share of Test Set |
+| ---------------------------------------- | ----: | ----------------: |
+| Both correct                             | 6,862 |             90.3% |
+| Logistic Regression wrong / BERT correct |   301 |              4.0% |
+| BERT wrong / Logistic Regression correct |   115 |              1.5% |
+| Both wrong                               |   322 |              4.2% |
 
-BERT flips 301 LR errors to correct predictions and loses 115 in the other direction. The **net +186 flips** account for ~2.45% of the test set — essentially the entire ~3% accuracy gap between the two models.
+BERT corrected 301 examples that Logistic Regression missed, while Logistic Regression corrected 115 examples that BERT missed. That gives BERT a net gain of 186 examples, which accounts for most of the accuracy gap between the two models.
 
-### Where BERT pulls ahead
+### Where BERT Helped
 
-The 301 LR→BERT wins cluster in semantically overlapping pairs:
+Many of BERT's gains came from examples where two categories shared similar vocabulary.
 
-| Confusion pair (LR's error) | Count |
-|---|---|
-| Sci/Tech → Business | 56 |
-| Business → Sci/Tech | 44 |
-| Business → World | 40 |
-| World → Sports | 38 |
-| World → Business | 31 |
-| World → Sci/Tech | 25 |
+| Logistic Regression Error Type | Count |
+| ------------------------------ | ----: |
+| Sci/Tech -> Business           |    56 |
+| Business -> Sci/Tech           |    44 |
+| Business -> World              |    40 |
+| World -> Sports                |    38 |
+| World -> Business              |    31 |
+| World -> Sci/Tech              |    25 |
 
-Four real examples LR got wrong and BERT got right:
+Examples where Logistic Regression was wrong and BERT was correct:
 
-- **`IBM to hire even more new workers. By the end of the year, the computing giant plans to have its biggest headcount since 1991.`** — true *Sci/Tech*. LR → Business (fooled by "hire/workers/headcount"); BERT → Sci/Tech.
-- **`Justices to debate mail-order wine...`** — true *Business* (commerce regulation). LR → Sci/Tech; BERT → Business.
-- **`Live: Olympics day four. Richard Faulds and Stephen Parry are going for gold for Great Britain in Athens.`** — true *World* (international event). LR → Sports (keyword "gold/Olympics"); BERT → World.
-- **`India's Tata expands regional footprint via NatSteel buyout.`** — true *World*. LR → Business (M&A vocabulary); BERT → World.
+- **`IBM to hire even more new workers. By the end of the year, the computing giant plans to have its biggest headcount since 1991.`** True label: *Sci/Tech*. Logistic Regression predicted *Business*, likely reacting to words like "hire," "workers," and "headcount." BERT predicted *Sci/Tech*.
+- **`Justices to debate mail-order wine...`** True label: *Business*. Logistic Regression predicted *Sci/Tech*, while BERT predicted *Business*.
+- **`Live: Olympics day four. Richard Faulds and Stephen Parry are going for gold for Great Britain in Athens.`** True label: *World*. Logistic Regression predicted *Sports*, while BERT predicted *World*.
+- **`India's Tata expands regional footprint via NatSteel buyout.`** True label: *World*. Logistic Regression predicted *Business*, while BERT predicted *World*.
 
-These failures have a common shape: LR latches onto lexical cues ("workers", "gold", "buyout") that co-occur with one class in training, while BERT's contextual embeddings weigh the surrounding words. This is the same reason contextual models separate *Apple (company)* from *apple (fruit)* — the meaning of a token depends on its neighbors, not just its identity.
+These examples suggest that Logistic Regression sometimes relied too heavily on individual keywords, while BERT was better able to use the surrounding context. This is the same basic idea behind separating "Apple" as a company from "apple" as a fruit: the surrounding words change what the token means. This does not make BERT perfect, but it does explain why it helped most on examples with overlapping topic vocabulary.
 
-### Where BERT still struggles
+### Where BERT Still Struggled
 
-BERT is not immune to semantic overlap. Its remaining errors concentrate in the same pair LR struggles with:
+BERT still made errors, especially in categories that naturally overlap.
 
-| Both-wrong confusion pair | Count |
-|---|---|
-| Business ↔ Sci/Tech (combined) | 164 |
-| World ↔ Business (combined) | 62 |
-| Sci/Tech ↔ World (combined) | 57 |
+| Both-Wrong Confusion Pair | Count |
+| ------------------------- | ----: |
+| Business <-> Sci/Tech     |   164 |
+| World <-> Business        |    62 |
+| Sci/Tech <-> World        |    57 |
 
-Tech companies with earnings-driven coverage and geopolitical stories with economic framing remain genuinely ambiguous — the categories themselves overlap in the source news.
+Some AG News categories are genuinely difficult to separate because real news stories often combine technology, business, and world events. For example, a story about a technology company can also be written from a business perspective.
 
-### An honest negative result
+### Headline Length Check
 
-We checked whether BERT's wins were driven by headline length. They aren't. Median word count is ≈36 for the full test set, for BERT-correct items, for BERT-errors, and for the LR-wrong/BERT-right set. Length is not a useful discriminator here; BERT's advantage is semantic, not structural.
+We also checked whether BERT's improvement was mainly related to headline length. The median word count was about 36 for the full test set, BERT-correct examples, BERT-error examples, and Logistic Regression-wrong/BERT-right examples.
 
----
-
-## 📌 Key Insights
-
-* Logistic Regression is a strong traditional baseline.
-* BERT achieved the best performance across all metrics.
-* BERT improvements are concentrated in harder semantic cases.
-* Contextual embeddings improve robustness on ambiguous headlines.
-* Traditional TF-IDF models remain competitive with lower computational cost.
+That suggests BERT's improvement was not mainly due to longer or shorter examples. It was more likely related to how the models handled overlapping topic vocabulary.
 
 ---
 
-## ⚠️ Limitations
+## Main Takeaways
 
-* **Single run, no seed variance.** All reported numbers come from one training run. We did not sweep seeds, so the reported BERT/LR gap does not include a confidence interval.
-* **Clean, balanced benchmark.** AG News has evenly sized classes, curated headlines, and minimal noise. Real-world news streams are messier.
-* **Short-headline regime.** Inputs are ~36 words on average. Conclusions may not transfer to longer articles where more context is available.
-* **Same-distribution eval.** Training and test come from the same AG News distribution. We did not evaluate under domain shift (e.g., a different news source, a different time period).
-* **No calibration analysis.** We report accuracy/F1 but did not study predicted-probability calibration.
-
----
-
-## 🚀 Future Improvements
-
-* Compare RoBERTa, DistilBERT, and other transformer models
-* Broader hyperparameter tuning
-* Evaluate robustness under domain shift
-* Analyze which BERT layers carry classification signal
-* Build an interactive Streamlit demo
+- Logistic Regression was a strong traditional baseline for this task.
+- BERT achieved the best overall performance.
+- BERT's largest gains came from examples where topic labels had overlapping vocabulary.
+- The performance gap was meaningful, but not huge, because TF-IDF-based models already performed well on AG News.
+- Compute cost matters: BERT performed better, but it was slower and more expensive to train than the traditional models.
 
 ---
 
-## 📁 Project Structure
+## Limitations
+
+- **Single training run:** We report results from one run and did not evaluate variance across multiple random seeds.
+- **Limited hyperparameter tuning:** We did not run a large search over BERT settings due to compute and time limits.
+- **Clean benchmark dataset:** AG News is balanced and relatively clean, which may not reflect messier real-world news data.
+- **Same-distribution evaluation:** The train and test examples come from the same dataset distribution. We did not test on articles from a different source or time period.
+- **Short text inputs:** The examples are short headlines or descriptions, so the results may not transfer directly to full-length articles.
+- **No calibration analysis:** We evaluated accuracy, precision, recall, and F1, but did not analyze probability calibration.
+
+---
+
+## Future Work
+
+Possible extensions include:
+
+- Compare BERT with DistilBERT, RoBERTa, or other transformer models
+- Run experiments with multiple random seeds
+- Evaluate the models on a different news dataset to test domain shift
+- Analyze model confidence and calibration
+- Build a simple demo for classifying new headlines
+
+---
+
+## Project Structure
 
 ```text
 News-Topic-Classification/
-│
-├── data/
-├── src/
-│   ├── baseline_models.py
-│   ├── bert_model.py
-│   ├── utils.py
-│   ├── error_analysis.py
-│   ├── overlap_analysis.py
-│   └── plot.py
-│
-├── results/
-│   ├── csv/
-│   └── plots/
-│
-├── writeup/
-├── presentation/
-│
-├── requirements.txt
-├── LICENSE
-└── README.md
+|
+|-- data/
+|   `-- README.md
+|
+|-- src/
+|   |-- baseline_models.py
+|   |-- bert_model.py
+|   |-- error_analysis.py
+|   |-- overlap_analysis.py
+|   |-- plot.py
+|   `-- utils.py
+|
+|-- results/
+|   |-- csv/
+|   `-- plots/
+|
+|-- requirements.txt
+|-- LICENSE
+`-- README.md
 ```
 
 ---
 
-## 🚀 Installation
+## Installation
 
-### Clone Repository
+### Clone the Repository
 
 ```bash
 git clone https://github.com/kechavious/News-Topic-Classification-Using-Machine-Learning-and-Transformer-Based-Models.git
 cd News-Topic-Classification-Using-Machine-Learning-and-Transformer-Based-Models
 ```
 
-### Create Virtual Environment
+### Create a Virtual Environment
 
 ```bash
 python -m venv venv
 ```
 
-### Activate Environment
+### Activate the Environment
 
-**Windows**
+Windows:
 
 ```bash
 venv\Scripts\activate
 ```
 
-**Mac / Linux**
+macOS/Linux:
 
 ```bash
 source venv/bin/activate
@@ -267,27 +270,27 @@ pip install -r requirements.txt
 
 ---
 
-## ▶️ Running Experiments
+## Running the Project
 
-### Train Baseline Models
+Train the traditional baseline models:
 
 ```bash
 python src/baseline_models.py
 ```
 
-### Train BERT Model
+Train the BERT model:
 
 ```bash
 python src/bert_model.py
 ```
 
-### Run Error Overlap Analysis
+Run the overlap/error analysis:
 
 ```bash
 python src/overlap_analysis.py
 ```
 
-### Generate Visualizations
+Generate visualizations:
 
 ```bash
 python src/plot.py
@@ -295,40 +298,40 @@ python src/plot.py
 
 ---
 
-## ⚙️ BERT Training Configuration
+## BERT Training Configuration
 
-| Parameter     | Value             |
-| ------------- | ----------------- |
-| Base Model    | bert-base-uncased |
-| Epochs        | 2                 |
-| Batch Size    | 8                 |
-| Learning Rate | 2e-5              |
-| Optimizer     | AdamW             |
-| Max Length    | 128               |
-
----
-
-## 🛠 Technologies Used
-
-* Python
-* Pandas
-* NumPy
-* Scikit-learn
-* PyTorch
-* Hugging Face Transformers
-* Matplotlib
+| Parameter     | Value               |
+| ------------- | ------------------- |
+| Base Model    | `bert-base-uncased` |
+| Epochs        | 2                   |
+| Batch Size    | 8                   |
+| Learning Rate | 2e-5                |
+| Optimizer     | AdamW               |
+| Max Length    | 128                 |
 
 ---
 
-## 🔁 Reproducibility Notes
+## Technologies Used
 
-This repository includes the full training pipeline, evaluation outputs, plots, and analysis scripts.
+- Python
+- Pandas
+- NumPy
+- Scikit-learn
+- PyTorch
+- Hugging Face Transformers
+- Matplotlib
 
-Trained BERT checkpoints are not included due to file size limitations.
+---
 
-Dependency versions are pinned in `requirements.txt`, and each training script writes an experiment configuration JSON into `results/csv/` so the dataset split, hyperparameters, and package versions used for a run are recorded alongside the metrics.
+## Reproducibility Notes
 
-To reproduce BERT results locally:
+This repository includes the training scripts, evaluation outputs, plots, and analysis scripts used for the project.
+
+Trained BERT checkpoints are not included because of file size limits.
+
+Dependency versions are listed in `requirements.txt`. The training scripts also write experiment configuration files into `results/csv/`, including dataset split information, hyperparameters, and package versions.
+
+To reproduce the BERT result locally, run:
 
 ```bash
 python src/bert_model.py
@@ -336,39 +339,23 @@ python src/bert_model.py
 
 ---
 
-## 📘 Documentation
+## References
 
-This repository currently includes the README, source code, saved CSV results, and generated plots. Final report and presentation files are not included in the repository.
-
----
-
-## 👤 Maintainer
-
-**Gordon Zau**
-GitHub: [https://github.com/kechavious](https://github.com/kechavious)
+- Devlin et al. (2019). *BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding.*
+- Joulin et al. (2017). *Bag of Tricks for Efficient Text Classification.*
+- Kim (2014). *Convolutional Neural Networks for Sentence Classification.*
+- Yang et al. (2016). *Hierarchical Attention Networks for Document Classification.*
 
 ---
 
-## 📚 References
-
-* Devlin et al. (2019). *BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding.*
-* Joulin et al. (2017). *Bag of Tricks for Efficient Text Classification.*
-* Kim (2014). *CNN for Sentence Classification.*
-* Yang et al. (2016). *Hierarchical Attention Networks.*
-
----
-
-## 📄 License
+## License
 
 This project is released under the MIT License. See `LICENSE` for details.
 
+---
 
+## Maintainer
 
+**Gordon Zau**
 
-
-
-
-
-
-
-
+GitHub: [https://github.com/kechavious](https://github.com/kechavious)
