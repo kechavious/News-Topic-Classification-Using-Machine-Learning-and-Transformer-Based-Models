@@ -227,12 +227,12 @@ News-Topic-Classification/
 │   └── plots/
 │
 ├── writeup/
-│   ├── report.pdf
-│   └── final_paper.tex       
+│   └── final_paper.tex
+│         
 │
 ├── presentation/
-│   ├── slides.pptx
-│   └── presentation.pdf     
+│   └── presentation.pdf   
+│ 
 │
 ├── requirements.txt
 ├── LICENSE
