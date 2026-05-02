@@ -349,10 +349,49 @@ python src/bert_model.py
 
 ## References
 
-- Devlin et al. (2019). *BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding.*
-- Joulin et al. (2017). *Bag of Tricks for Efficient Text Classification.*
-- Kim (2014). *Convolutional Neural Networks for Sentence Classification.*
-- Yang et al. (2016). *Hierarchical Attention Networks for Document Classification.*
+### Foundational Models & Architectures
+
+- **[1]** Vaswani, A., et al. (2017). *Attention Is All You Need.* NeurIPS.  
+  📄 [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+
+- **[2]** Devlin, J., Chang, M.-W., Lee, K., & Toutanova, K. (2019). *BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding.* NAACL-HLT.  
+  📄 [aclanthology.org/N19-1423](https://aclanthology.org/N19-1423/)
+
+- **[3]** Kim, Y. (2014). *Convolutional Neural Networks for Sentence Classification.* EMNLP.  
+  📄 [aclanthology.org/D14-1181](https://aclanthology.org/D14-1181/)
+
+- **[4]** Yang, Z., Yang, D., Dyer, C., He, X., Smola, A., & Hovy, E. (2016). *Hierarchical Attention Networks for Document Classification.* NAACL-HLT.  
+  📄 [aclanthology.org/N16-1174](https://aclanthology.org/N16-1174/)
+
+### Classical Text Classification
+
+- **[5]** McCallum, A., & Nigam, K. (1998). *A Comparison of Event Models for Naive Bayes Text Classification.* AAAI Workshop on Learning for Text Categorization.
+
+- **[6]** Salton, G., & Buckley, C. (1988). *Term-Weighting Approaches in Automatic Text Retrieval.* Information Processing & Management, 24(5), 513–523.
+
+- **[7]** Joulin, A., Grave, E., Bojanowski, P., & Mikolov, T. (2017). *Bag of Tricks for Efficient Text Classification.* EACL.  
+  📄 [aclanthology.org/E17-2068](https://aclanthology.org/E17-2068/)
+
+### Datasets & Benchmarks
+
+- **[8]** Zhang, X., Zhao, J., & LeCun, Y. (2015). *Character-Level Convolutional Networks for Text Classification* (AG News dataset). NeurIPS.  
+  📄 [arXiv:1509.01626](https://arxiv.org/abs/1509.01626)
+
+### Analysis & Optimization
+
+- **[9]** Tenney, I., Das, D., & Pavlick, E. (2019). *BERT Rediscovers the Classical NLP Pipeline.* ACL.  
+  📄 [aclanthology.org/P19-1452](https://aclanthology.org/P19-1452/)
+
+- **[10]** Loshchilov, I., & Hutter, F. (2019). *Decoupled Weight Decay Regularization* (AdamW). ICLR.  
+  📄 [arXiv:1711.05101](https://arxiv.org/abs/1711.05101)
+
+### Software & Libraries
+
+- **[11]** Wolf, T., et al. (2020). *Transformers: State-of-the-Art Natural Language Processing.* EMNLP System Demonstrations.  
+  📄 [aclanthology.org/2020.emnlp-demos.6](https://aclanthology.org/2020.emnlp-demos.6/)
+
+- **[12]** Pedregosa, F., et al. (2011). *Scikit-learn: Machine Learning in Python.* JMLR, 12, 2825–2830.  
+  📄 [jmlr.org/papers/v12/pedregosa11a](https://jmlr.org/papers/v12/pedregosa11a.html)
 
 ---
 
