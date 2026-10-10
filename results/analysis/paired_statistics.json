@@ -1,0 +1,36 @@
+{
+  "n_examples": 7600,
+  "metrics": {
+    "logistic_regression": {
+      "accuracy": 0.9180263157894737,
+      "precision": 0.9177577356864279,
+      "recall": 0.9180263157894737,
+      "macro_f1": 0.9178120002566916
+    },
+    "bert": {
+      "accuracy": 0.9425,
+      "precision": 0.9424341030163752,
+      "recall": 0.9425000000000001,
+      "macro_f1": 0.9423999446333244
+    }
+  },
+  "overlap": {
+    "both_correct": 6862,
+    "lr_wrong_bert_correct": 301,
+    "bert_wrong_lr_correct": 115,
+    "both_wrong": 322
+  },
+  "accuracy_difference_bert_minus_lr": 0.024473684210526314,
+  "paired_bootstrap_95_percent_ci": [
+    0.019210526315789473,
+    0.02973684210526316
+  ],
+  "bootstrap_seed": 42,
+  "bootstrap_resamples": 10000,
+  "mcnemar_exact_two_sided_p": 2.7123326460435584e-20,
+  "inference_scope": "Conditional on these saved models and test examples; does not measure training-seed variance or establish a causal mechanism.",
+  "input_sha256": {
+    "lr": "873de06981bbad2125919c2f802e68880989e45aaec6e0ad3d8a9628092be469",
+    "bert": "8d1b82f842b95c8f4ab541716a4b9c496e07dfb5d72aff2df97efc3b1b484059"
+  }
+}

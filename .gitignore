@@ -19,3 +19,12 @@ env/
 
 # Training artifacts
 results/bert_checkpoints/
+
+# Local experiment runs and generated document intermediates
+runs/
+*.aux
+*.log
+*.out
+*.toc
+*.nav
+*.snm

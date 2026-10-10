@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "Please cite this research software and separately cite AG News and BERT."
+type: software
+title: "AG News: TF-IDF baselines and BERT"
+authors:
+  - family-names: Liu
+    given-names: George
+  - family-names: Zau
+    given-names: Gordon
+  - family-names: Dong
+    given-names: Louis
+  - family-names: Zhou
+    given-names: Zhiqi
+repository-code: "https://github.com/kechavious/News-Topic-Classification-Using-Machine-Learning-and-Transformer-Based-Models"
+license: MIT
+abstract: "A single-run AG News benchmark comparison with auditable saved predictions, paired error analysis and reproducible training/inference tools."

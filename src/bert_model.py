@@ -1,4 +1,5 @@
 import os
+import argparse
 import numpy as np
 import pandas as pd
 
@@ -18,6 +19,8 @@ from sklearn.metrics import (
 
 from utils import (
     SEED,
+    seed_everything,
+    prepare_output_dir,
     LABEL_NAMES,
     ensure_directories,
     load_ag_news_data,
@@ -54,11 +57,11 @@ def compute_metrics(eval_pred):
     }
 
 
-def tokenize_function(examples, tokenizer):
+def tokenize_function(examples, tokenizer, max_length=128):
     return tokenizer(
         examples["text"],
         truncation=True,
-        max_length=128,
+        max_length=max_length,
     )
 
 
@@ -84,6 +87,7 @@ def evaluate_predictions(model_name: str, y_true, y_pred):
         classification_report(
             y_true,
             y_pred,
+            labels=list(LABEL_NAMES),
             target_names=[LABEL_NAMES[i] for i in range(len(LABEL_NAMES))],
             digits=4,
             zero_division=0,
@@ -103,22 +107,51 @@ def evaluate_predictions(model_name: str, y_true, y_pred):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--output-dir",
+        default="runs/bert_model",
+        help="Fresh directory for this experiment",
+    )
+    parser.add_argument("--seed", type=int, default=SEED)
+    parser.add_argument(
+        "--dataset-revision", help="Optional Hugging Face dataset commit"
+    )
+    parser.add_argument("--model", default=MODEL_NAME)
+    parser.add_argument("--model-revision", help="Optional Hugging Face model commit")
+    parser.add_argument("--epochs", type=float, default=2)
+    parser.add_argument("--batch-size", type=int, default=8)
+    parser.add_argument("--max-length", type=int, default=128)
+    parser.add_argument("--learning-rate", type=float, default=2e-5)
+    args = parser.parse_args()
+    seed_everything(args.seed)
+    output_dir = prepare_output_dir(args.output_dir)
+    os.chdir(output_dir)
     ensure_directories()
     os.makedirs("results/csv", exist_ok=True)
     os.makedirs("results/plots", exist_ok=True)
 
     dev_size = 0.1
-    train_set, dev_set, test_set = load_ag_news_data(dev_size=dev_size)
+    train_set, dev_set, test_set = load_ag_news_data(
+        dev_size=dev_size, seed=args.seed, revision=args.dataset_revision
+    )
 
     X_train, y_train = extract_text_and_labels(train_set)
     X_dev, y_dev = extract_text_and_labels(dev_set)
     X_test, y_test = extract_text_and_labels(test_set)
 
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    tokenizer = AutoTokenizer.from_pretrained(args.model, revision=args.model_revision)
+    tokenizer.model_max_length = args.max_length
 
-    train_dataset = train_set.map(lambda x: tokenize_function(x, tokenizer), batched=True)
-    dev_dataset = dev_set.map(lambda x: tokenize_function(x, tokenizer), batched=True)
-    test_dataset = test_set.map(lambda x: tokenize_function(x, tokenizer), batched=True)
+    train_dataset = train_set.map(
+        lambda x: tokenize_function(x, tokenizer, args.max_length), batched=True
+    )
+    dev_dataset = dev_set.map(
+        lambda x: tokenize_function(x, tokenizer, args.max_length), batched=True
+    )
+    test_dataset = test_set.map(
+        lambda x: tokenize_function(x, tokenizer, args.max_length), batched=True
+    )
 
     train_dataset = train_dataset.rename_column("label", "labels")
     dev_dataset = dev_dataset.rename_column("label", "labels")
@@ -137,7 +170,11 @@ def main():
     )
 
     model = AutoModelForSequenceClassification.from_pretrained(
-        MODEL_NAME,
+        args.model,
+        revision=args.model_revision,
+        use_safetensors=True,
+        id2label=LABEL_NAMES,
+        label2id={label: i for i, label in LABEL_NAMES.items()},
         num_labels=4,
     )
 
@@ -148,23 +185,30 @@ def main():
         eval_strategy="epoch",
         save_strategy="epoch",
         logging_strategy="epoch",
-        learning_rate=2e-5,
-        per_device_train_batch_size=8,
-        per_device_eval_batch_size=8,
-        num_train_epochs=2,
+        learning_rate=args.learning_rate,
+        per_device_train_batch_size=args.batch_size,
+        per_device_eval_batch_size=args.batch_size,
+        num_train_epochs=args.epochs,
         weight_decay=0.01,
         load_best_model_at_end=True,
+        metric_for_best_model="eval_loss",
+        greater_is_better=False,
         report_to="none",
-        seed=SEED,
+        seed=args.seed,
     )
 
     save_experiment_config(
         "results/csv/bert_experiment_config.json",
         {
             "script": "src/bert_model.py",
-            "seed": SEED,
+            "seed": args.seed,
             "dataset": {
                 "name": "ag_news",
+                "repository_id": "fancyzhx/ag_news",
+                "requested_revision": args.dataset_revision,
+                "train_fingerprint": train_set._fingerprint,
+                "dev_fingerprint": dev_set._fingerprint,
+                "test_fingerprint": test_set._fingerprint,
                 "train_size": len(train_set),
                 "dev_size": len(dev_set),
                 "test_size": len(test_set),
@@ -172,9 +216,11 @@ def main():
                 "dev_split_strategy": "stratified by label",
             },
             "model": {
-                "base_model": MODEL_NAME,
+                "base_model": args.model,
+                "requested_revision": args.model_revision,
+                "resolved_revision": getattr(model.config, "_commit_hash", None),
                 "num_labels": 4,
-                "tokenizer_max_length": 128,
+                "tokenizer_max_length": args.max_length,
             },
             "training_arguments": {
                 "output_dir": training_args.output_dir,
@@ -217,6 +263,8 @@ def main():
 
     print("\nTraining BERT...\n")
     trainer.train()
+    trainer.save_model("models/bert")
+    tokenizer.save_pretrained("models/bert")
 
     dev_predictions = trainer.predict(dev_dataset)
     dev_pred_labels = np.argmax(dev_predictions.predictions, axis=1)
@@ -251,11 +299,14 @@ def main():
     )
 
     # Save BERT test predictions for overlap analysis
-    bert_pred_df = pd.DataFrame({
-        "text": X_test,
-        "true_label_id": y_test,
-        "pred_label_id": test_pred_labels,
-    })
+    bert_pred_df = pd.DataFrame(
+        {
+            "example_id": list(range(len(X_test))),
+            "text": X_test,
+            "true_label_id": y_test,
+            "pred_label_id": test_pred_labels,
+        }
+    )
     bert_pred_df.to_csv(
         "results/csv/bert_test_predictions.csv",
         index=False,

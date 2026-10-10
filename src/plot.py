@@ -17,8 +17,6 @@ RESULTS_DIR = os.path.join(PROJECT_ROOT, "results")
 CSV_DIR = os.path.join(RESULTS_DIR, "csv")
 PLOTS_DIR = os.path.join(RESULTS_DIR, "plots")
 
-os.makedirs(PLOTS_DIR, exist_ok=True)
-
 
 # =========================
 # Helpers
@@ -90,7 +88,9 @@ def parse_long_format(df: pd.DataFrame) -> pd.DataFrame:
     if "Metric" not in df.columns or "Value" not in df.columns:
         raise ValueError("Not long format")
 
-    test_df = df[df["Metric"].astype(str).str.contains(r"\(Test\)", regex=True, na=False)].copy()
+    test_df = df[
+        df["Metric"].astype(str).str.contains(r"\(Test\)", regex=True, na=False)
+    ].copy()
 
     rows = []
     for _, row in test_df.iterrows():
@@ -139,7 +139,13 @@ def parse_wide_format(df: pd.DataFrame) -> pd.DataFrame:
     recall_col = col_map.get("recall")
     f1_col = col_map.get("f1") or col_map.get("f1 score") or col_map.get("f1_score")
 
-    if not model_col or not accuracy_col or not precision_col or not recall_col or not f1_col:
+    if (
+        not model_col
+        or not accuracy_col
+        or not precision_col
+        or not recall_col
+        or not f1_col
+    ):
         raise ValueError("Not wide format")
 
     model_names = df[model_col].astype(str)
@@ -147,13 +153,15 @@ def parse_wide_format(df: pd.DataFrame) -> pd.DataFrame:
     if test_mask.any():
         df = df[test_mask].copy()
 
-    out = pd.DataFrame({
-        "Model": df[model_col].apply(standardize_model_name),
-        "Accuracy": pd.to_numeric(df[accuracy_col], errors="coerce"),
-        "Precision": pd.to_numeric(df[precision_col], errors="coerce"),
-        "Recall": pd.to_numeric(df[recall_col], errors="coerce"),
-        "F1": pd.to_numeric(df[f1_col], errors="coerce"),
-    })
+    out = pd.DataFrame(
+        {
+            "Model": df[model_col].apply(standardize_model_name),
+            "Accuracy": pd.to_numeric(df[accuracy_col], errors="coerce"),
+            "Precision": pd.to_numeric(df[precision_col], errors="coerce"),
+            "Recall": pd.to_numeric(df[recall_col], errors="coerce"),
+            "F1": pd.to_numeric(df[f1_col], errors="coerce"),
+        }
+    )
 
     out = out.dropna(subset=["Model", "Accuracy", "Precision", "Recall", "F1"])
     return out
@@ -176,8 +184,7 @@ def parse_summary_file(path: str) -> pd.DataFrame:
         pass
 
     raise ValueError(
-        f"Unsupported CSV format in {path}. "
-        f"Columns found: {list(df.columns)}"
+        f"Unsupported CSV format in {path}. Columns found: {list(df.columns)}"
     )
 
 
@@ -190,7 +197,9 @@ def load_summary_results() -> pd.DataFrame:
     combined = pd.concat([baseline_df, bert_df], ignore_index=True)
 
     # Remove duplicate models if the same model appears twice
-    combined = combined.groupby("Model", as_index=False)[["Accuracy", "Precision", "Recall", "F1"]].max()
+    combined = combined.groupby("Model", as_index=False)[
+        ["Accuracy", "Precision", "Recall", "F1"]
+    ].max()
 
     model_order = [
         "Most Frequent Baseline",
@@ -199,7 +208,9 @@ def load_summary_results() -> pd.DataFrame:
         "BERT",
     ]
 
-    combined["Model"] = pd.Categorical(combined["Model"], categories=model_order, ordered=True)
+    combined["Model"] = pd.Categorical(
+        combined["Model"], categories=model_order, ordered=True
+    )
     combined = combined.sort_values("Model").reset_index(drop=True)
 
     return combined
@@ -210,26 +221,34 @@ def load_summary_results() -> pd.DataFrame:
 # =========================
 def get_error_file_paths():
     return {
-        "Most Frequent Baseline": find_existing_file([
-            os.path.join(CSV_DIR, "errors_most_frequent_test.csv"),
-            os.path.join(RESULTS_DIR, "errors_most_frequent_test.csv"),
-            os.path.join(PROJECT_ROOT, "errors_most_frequent_test.csv"),
-        ]),
-        "Naive Bayes": find_existing_file([
-            os.path.join(CSV_DIR, "errors_naive_bayes_test.csv"),
-            os.path.join(RESULTS_DIR, "errors_naive_bayes_test.csv"),
-            os.path.join(PROJECT_ROOT, "errors_naive_bayes_test.csv"),
-        ]),
-        "Logistic Regression": find_existing_file([
-            os.path.join(CSV_DIR, "errors_logistic_regression_test.csv"),
-            os.path.join(RESULTS_DIR, "errors_logistic_regression_test.csv"),
-            os.path.join(PROJECT_ROOT, "errors_logistic_regression_test.csv"),
-        ]),
-        "BERT": find_existing_file([
-            os.path.join(CSV_DIR, "errors_bert_test.csv"),
-            os.path.join(RESULTS_DIR, "errors_bert_test.csv"),
-            os.path.join(PROJECT_ROOT, "errors_bert_test.csv"),
-        ]),
+        "Most Frequent Baseline": find_existing_file(
+            [
+                os.path.join(CSV_DIR, "errors_most_frequent_test.csv"),
+                os.path.join(RESULTS_DIR, "errors_most_frequent_test.csv"),
+                os.path.join(PROJECT_ROOT, "errors_most_frequent_test.csv"),
+            ]
+        ),
+        "Naive Bayes": find_existing_file(
+            [
+                os.path.join(CSV_DIR, "errors_naive_bayes_test.csv"),
+                os.path.join(RESULTS_DIR, "errors_naive_bayes_test.csv"),
+                os.path.join(PROJECT_ROOT, "errors_naive_bayes_test.csv"),
+            ]
+        ),
+        "Logistic Regression": find_existing_file(
+            [
+                os.path.join(CSV_DIR, "errors_logistic_regression_test.csv"),
+                os.path.join(RESULTS_DIR, "errors_logistic_regression_test.csv"),
+                os.path.join(PROJECT_ROOT, "errors_logistic_regression_test.csv"),
+            ]
+        ),
+        "BERT": find_existing_file(
+            [
+                os.path.join(CSV_DIR, "errors_bert_test.csv"),
+                os.path.join(RESULTS_DIR, "errors_bert_test.csv"),
+                os.path.join(PROJECT_ROOT, "errors_bert_test.csv"),
+            ]
+        ),
     }
 
 
@@ -242,10 +261,12 @@ def load_error_counts() -> pd.DataFrame:
             continue
 
         df = pd.read_csv(path)
-        records.append({
-            "Model": model_name,
-            "ErrorCount": len(df),
-        })
+        records.append(
+            {
+                "Model": model_name,
+                "ErrorCount": len(df),
+            }
+        )
 
     if not records:
         return pd.DataFrame()
@@ -254,7 +275,9 @@ def load_error_counts() -> pd.DataFrame:
 
     # if every file has exactly 100 rows, they are probably sample errors only
     if (error_df["ErrorCount"] == 100).all():
-        print("All error CSV files contain exactly 100 rows. These appear to be sample errors only.")
+        print(
+            "All error CSV files contain exactly 100 rows. These appear to be sample errors only."
+        )
         print("Skipping error_count_comparison.png to avoid misleading totals.")
         return pd.DataFrame()
 
@@ -264,7 +287,9 @@ def load_error_counts() -> pd.DataFrame:
         "Logistic Regression",
         "BERT",
     ]
-    error_df["Model"] = pd.Categorical(error_df["Model"], categories=model_order, ordered=True)
+    error_df["Model"] = pd.Categorical(
+        error_df["Model"], categories=model_order, ordered=True
+    )
     error_df = error_df.sort_values("Model").reset_index(drop=True)
 
     return error_df
@@ -284,7 +309,7 @@ def add_value_labels(ax, values, fmt="{:.4f}", y_offset=0.01):
 def plot_metric_comparison(summary_df: pd.DataFrame):
     plot_df = summary_df.set_index("Model")[["Accuracy", "Precision", "Recall", "F1"]]
 
-    ax = plot_df.plot(kind="bar", figsize=(11, 6))
+    plot_df.plot(kind="bar", figsize=(11, 6))
     plt.title("Model Performance Comparison")
     plt.xlabel("Model")
     plt.ylabel("Score")
@@ -300,7 +325,11 @@ def plot_metric_comparison(summary_df: pd.DataFrame):
 
 
 def plot_f1_comparison(summary_df: pd.DataFrame):
-    plot_df = summary_df[["Model", "F1"]].sort_values("F1", ascending=False).reset_index(drop=True)
+    plot_df = (
+        summary_df[["Model", "F1"]]
+        .sort_values("F1", ascending=False)
+        .reset_index(drop=True)
+    )
 
     plt.figure(figsize=(9, 5))
     plt.bar(plot_df["Model"], plot_df["F1"])
@@ -319,7 +348,11 @@ def plot_f1_comparison(summary_df: pd.DataFrame):
 
 
 def plot_accuracy_comparison(summary_df: pd.DataFrame):
-    plot_df = summary_df[["Model", "Accuracy"]].sort_values("Accuracy", ascending=False).reset_index(drop=True)
+    plot_df = (
+        summary_df[["Model", "Accuracy"]]
+        .sort_values("Accuracy", ascending=False)
+        .reset_index(drop=True)
+    )
 
     plt.figure(figsize=(9, 5))
     plt.bar(plot_df["Model"], plot_df["Accuracy"])
@@ -328,7 +361,9 @@ def plot_accuracy_comparison(summary_df: pd.DataFrame):
     plt.ylabel("Accuracy")
     plt.ylim(0, 1.05)
     plt.xticks(rotation=15)
-    add_value_labels(plt.gca(), plot_df["Accuracy"].tolist(), fmt="{:.4f}", y_offset=0.01)
+    add_value_labels(
+        plt.gca(), plot_df["Accuracy"].tolist(), fmt="{:.4f}", y_offset=0.01
+    )
     plt.tight_layout()
 
     save_path = os.path.join(PLOTS_DIR, "accuracy_comparison.png")
@@ -338,10 +373,12 @@ def plot_accuracy_comparison(summary_df: pd.DataFrame):
 
 
 def plot_overlap_comparison():
-    overlap_path = find_existing_file([
-        os.path.join(CSV_DIR, "overlap_analysis", "overlap_summary.csv"),
-        os.path.join(RESULTS_DIR, "overlap_analysis", "overlap_summary.csv"),
-    ])
+    overlap_path = find_existing_file(
+        [
+            os.path.join(CSV_DIR, "overlap_analysis", "overlap_summary.csv"),
+            os.path.join(RESULTS_DIR, "overlap_analysis", "overlap_summary.csv"),
+        ]
+    )
 
     if overlap_path is None:
         print("Skipping overlap plot: overlap_summary.csv not found.")
@@ -374,7 +411,9 @@ def plot_overlap_comparison():
             bar.get_x() + bar.get_width() / 2,
             bar.get_height() + total * 0.005,
             f"{count:,}\n({pct:.1f}%)",
-            ha="center", va="bottom", fontsize=9,
+            ha="center",
+            va="bottom",
+            fontsize=9,
         )
 
     ax.set_title("LR vs BERT Error Overlap (Test Set)")
@@ -417,6 +456,20 @@ def plot_error_count_comparison(error_df: pd.DataFrame):
 # Main
 # =========================
 def main():
+    import argparse
+
+    global RESULTS_DIR, CSV_DIR, PLOTS_DIR
+    parser = argparse.ArgumentParser(
+        description="Plot evaluation summaries without modifying published artifacts"
+    )
+    parser.add_argument("--results-dir", default=RESULTS_DIR)
+    parser.add_argument("--output-dir", default="runs/plots")
+    args = parser.parse_args()
+    RESULTS_DIR = os.path.abspath(args.results_dir)
+    CSV_DIR = os.path.join(RESULTS_DIR, "csv")
+    from utils import prepare_output_dir
+
+    PLOTS_DIR = prepare_output_dir(args.output_dir)
     summary_df = load_summary_results()
 
     print("\nSummary results:")

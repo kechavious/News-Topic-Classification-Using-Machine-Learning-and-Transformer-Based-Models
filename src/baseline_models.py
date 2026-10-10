@@ -1,4 +1,5 @@
 import os
+import argparse
 import pandas as pd
 from collections import Counter
 
@@ -14,6 +15,8 @@ from sklearn.metrics import (
 
 from utils import (
     SEED,
+    seed_everything,
+    prepare_output_dir,
     LABEL_NAMES,
     ensure_directories,
     load_ag_news_data,
@@ -62,6 +65,7 @@ def evaluate_model(model_name: str, y_true, y_pred):
         classification_report(
             y_true,
             y_pred,
+            labels=list(LABEL_NAMES),
             target_names=[LABEL_NAMES[i] for i in range(len(LABEL_NAMES))],
             digits=4,
             zero_division=0,
@@ -81,12 +85,28 @@ def evaluate_model(model_name: str, y_true, y_pred):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--output-dir",
+        default="runs/baseline_models",
+        help="Fresh directory for this experiment",
+    )
+    parser.add_argument("--seed", type=int, default=SEED)
+    parser.add_argument(
+        "--dataset-revision", help="Optional Hugging Face dataset commit"
+    )
+    args = parser.parse_args()
+    seed_everything(args.seed)
+    output_dir = prepare_output_dir(args.output_dir)
+    os.chdir(output_dir)
     ensure_directories()
     os.makedirs("results/csv", exist_ok=True)
     os.makedirs("results/plots", exist_ok=True)
 
     dev_size = 0.1
-    train_set, dev_set, test_set = load_ag_news_data(dev_size=dev_size)
+    train_set, dev_set, test_set = load_ag_news_data(
+        dev_size=dev_size, seed=args.seed, revision=args.dataset_revision
+    )
 
     X_train, y_train = extract_text_and_labels(train_set)
     X_dev, y_dev = extract_text_and_labels(dev_set)
@@ -103,9 +123,14 @@ def main():
         "results/csv/baseline_experiment_config.json",
         {
             "script": "src/baseline_models.py",
-            "seed": SEED,
+            "seed": args.seed,
             "dataset": {
                 "name": "ag_news",
+                "repository_id": "fancyzhx/ag_news",
+                "requested_revision": args.dataset_revision,
+                "train_fingerprint": train_set._fingerprint,
+                "dev_fingerprint": dev_set._fingerprint,
+                "test_fingerprint": test_set._fingerprint,
                 "train_size": len(train_set),
                 "dev_size": len(dev_set),
                 "test_size": len(test_set),
@@ -128,7 +153,7 @@ def main():
                 "naive_bayes": {},
                 "logistic_regression": {
                     "max_iter": 2000,
-                    "random_state": SEED,
+                    "random_state": args.seed,
                 },
             },
             "package_versions": get_package_versions(
@@ -150,8 +175,12 @@ def main():
     dev_pred_baseline = baseline.predict(len(y_dev))
     test_pred_baseline = baseline.predict(len(y_test))
 
-    results.append(evaluate_model("Most Frequent Baseline (Dev)", y_dev, dev_pred_baseline))
-    results.append(evaluate_model("Most Frequent Baseline (Test)", y_test, test_pred_baseline))
+    results.append(
+        evaluate_model("Most Frequent Baseline (Dev)", y_dev, dev_pred_baseline)
+    )
+    results.append(
+        evaluate_model("Most Frequent Baseline (Test)", y_test, test_pred_baseline)
+    )
 
     save_error_analysis(
         X_test,
@@ -204,7 +233,7 @@ def main():
     # 3. Logistic Regression
     lr_model = LogisticRegression(
         max_iter=2000,
-        random_state=SEED,
+        random_state=args.seed,
     )
     lr_model.fit(X_train_tfidf, y_train)
 
@@ -233,12 +262,29 @@ def main():
         title="Logistic Regression Confusion Matrix (Test Set)",
     )
 
+    # Serialize the complete preprocessing + classifier pipeline for inference.
+    import joblib
+    from sklearn.pipeline import Pipeline
+
+    os.makedirs("models", exist_ok=True)
+    joblib.dump(
+        Pipeline([("tfidf", vectorizer), ("classifier", lr_model)]),
+        "models/logistic_regression.joblib",
+    )
+    joblib.dump(
+        Pipeline([("tfidf", vectorizer), ("classifier", nb_model)]),
+        "models/naive_bayes.joblib",
+    )
+
     # Save LR test predictions for overlap analysis
-    lr_pred_df = pd.DataFrame({
-        "text": X_test,
-        "true_label_id": y_test,
-        "pred_label_id": test_pred_lr,
-    })
+    lr_pred_df = pd.DataFrame(
+        {
+            "example_id": list(range(len(X_test))),
+            "text": X_test,
+            "true_label_id": y_test,
+            "pred_label_id": test_pred_lr,
+        }
+    )
     lr_pred_df.to_csv(
         "results/csv/lr_test_predictions.csv",
         index=False,

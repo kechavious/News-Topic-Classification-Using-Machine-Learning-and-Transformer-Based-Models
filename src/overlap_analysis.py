@@ -1,71 +1,35 @@
-import os
-import pandas as pd
+"""Compare saved predictions with strict example alignment."""
+
+import argparse
+from pathlib import Path
+
 from error_analysis import save_overlap_analysis, save_stratified_error_sample
-
-
-def load_predictions(path: str) -> pd.DataFrame:
-    df = pd.read_csv(path)
-    return df
+from research_analysis import load_predictions, align_predictions
+from utils import prepare_output_dir
 
 
 def main():
-    """
-    Expected input files:
-      results/csv/lr_test_predictions.csv
-      results/csv/bert_test_predictions.csv
-
-    Each file should contain:
-      text, true_label_id, pred_label_id
-    """
-
-    lr_path = "results/csv/lr_test_predictions.csv"
-    bert_path = "results/csv/bert_test_predictions.csv"
-
-    if not os.path.exists(lr_path):
-        raise FileNotFoundError(f"Missing file: {lr_path}")
-    if not os.path.exists(bert_path):
-        raise FileNotFoundError(f"Missing file: {bert_path}")
-
-    lr_df = pd.read_csv(lr_path)
-    bert_df = pd.read_csv(bert_path)
-
-    required_cols = {"text", "true_label_id", "pred_label_id"}
-    if not required_cols.issubset(lr_df.columns):
-        raise ValueError(f"{lr_path} must contain columns: {required_cols}")
-    if not required_cols.issubset(bert_df.columns):
-        raise ValueError(f"{bert_path} must contain columns: {required_cols}")
-
-    # align by text + gold label
-    merged = lr_df.merge(
-        bert_df,
-        on=["text", "true_label_id"],
-        suffixes=("_lr", "_bert")
-    )
-
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--lr", default="results/csv/lr_test_predictions.csv")
+    parser.add_argument("--bert", default="results/csv/bert_test_predictions.csv")
+    parser.add_argument("--error-dir", default="results/csv")
+    parser.add_argument("--output-dir", default="runs/overlap-analysis")
+    args = parser.parse_args()
+    lr, bert = align_predictions(load_predictions(args.lr), load_predictions(args.bert))
+    output = Path(prepare_output_dir(args.output_dir))
     save_overlap_analysis(
-        texts=merged["text"].tolist(),
-        y_true=merged["true_label_id"].tolist(),
-        lr_pred=merged["pred_label_id_lr"].tolist(),
-        bert_pred=merged["pred_label_id_bert"].tolist(),
-        output_dir="results/csv/overlap_analysis",
+        lr.text.tolist(),
+        lr.true_label_id.tolist(),
+        lr.pred_label_id.tolist(),
+        bert.pred_label_id.tolist(),
+        str(output),
     )
-
-    # Stratified samples for the full error files
-    save_stratified_error_sample(
-        "results/csv/errors_logistic_regression_test.csv",
-        "results/csv/errors_logistic_regression_test_sample100_stratified.csv",
-        total_samples=100,
-        random_seed=42,
-        min_per_pair=5,
-    )
-
-    save_stratified_error_sample(
-        "results/csv/errors_bert_test.csv",
-        "results/csv/errors_bert_test_sample100_stratified.csv",
-        total_samples=100,
-        random_seed=42,
-        min_per_pair=5,
-    )
+    for name in ("logistic_regression", "bert"):
+        error_path = Path(args.error_dir) / f"errors_{name}_test.csv"
+        if error_path.exists():
+            save_stratified_error_sample(
+                str(error_path), str(output / f"errors_{name}_sample100.csv")
+            )
 
 
 if __name__ == "__main__":

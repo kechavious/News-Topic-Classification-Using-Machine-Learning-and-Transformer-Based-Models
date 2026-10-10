@@ -1,0 +1,49 @@
+{
+  "created_at_utc": "2026-10-10T17:57:30.087862+00:00",
+  "dataset": {
+    "dev_fingerprint": "6192d162dc2443b8",
+    "dev_size": 12000,
+    "dev_split_fraction": 0.1,
+    "dev_split_strategy": "stratified by label",
+    "name": "ag_news",
+    "repository_id": "fancyzhx/ag_news",
+    "requested_revision": null,
+    "test_fingerprint": "0ebcc57b6aea2fc9",
+    "test_size": 7600,
+    "train_fingerprint": "05acce5f0badc506",
+    "train_size": 108000
+  },
+  "feature_extraction": {
+    "lowercase": true,
+    "max_features": 20000,
+    "ngram_range": [
+      1,
+      2
+    ],
+    "stop_words": "english",
+    "type": "tfidf"
+  },
+  "model_hyperparameters": {
+    "logistic_regression": {
+      "max_iter": 2000,
+      "random_state": 42
+    },
+    "naive_bayes": {}
+  },
+  "models": [
+    "Most Frequent Baseline",
+    "Naive Bayes",
+    "Logistic Regression"
+  ],
+  "package_versions": {
+    "datasets": "4.8.4",
+    "matplotlib": "3.9.2",
+    "numpy": "2.0.2",
+    "pandas": "2.2.3",
+    "scikit-learn": "1.5.2"
+  },
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "python_version": "3.12.14",
+  "script": "src/baseline_models.py",
+  "seed": 42
+}

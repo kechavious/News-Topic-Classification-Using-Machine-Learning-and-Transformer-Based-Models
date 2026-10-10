@@ -1,0 +1,12 @@
+{
+  "dataset_repository": "fancyzhx/ag_news",
+  "dataset_revision": "eb185aade064a813bc0b7f42de02595523103ca4",
+  "test_texts_and_labels_match_historical": true,
+  "lr_prediction_changes_vs_historical": 74,
+  "historical_lr_accuracy": 0.9180263157894737,
+  "replication_lr_accuracy": 0.9188157894736843,
+  "bert_pretrained_revision": "86b5e0934494bd15c9632b12f734a8a67f723594",
+  "bert_check": "One optimizer step on two training examples, sequence length 32, CPU; not full fine-tuning or reproduction of reported test accuracy.",
+  "historical_training_reproduction": "Not exact. Original training metadata is unavailable; the cause of the score differences is undetermined.",
+  "historical_lr_predictions_sha256": "873de06981bbad2125919c2f802e68880989e45aaec6e0ad3d8a9628092be469"
+}

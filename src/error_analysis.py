@@ -1,5 +1,4 @@
 import os
-import random
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
@@ -17,23 +16,37 @@ def save_error_analysis(texts, y_true, y_pred, output_file: str, max_examples=No
         output_file: output csv path
         max_examples: if None, save all errors; otherwise save first N
     """
+    if not (len(texts) == len(y_true) == len(y_pred)):
+        raise ValueError("Texts, labels and predictions must have equal lengths")
     errors = []
     for text, true_label, pred_label in zip(texts, y_true, y_pred):
         if true_label != pred_label:
-            errors.append({
-                "text": text,
-                "true_label": LABEL_NAMES[true_label],
-                "pred_label": LABEL_NAMES[pred_label],
-                "true_id": true_label,
-                "pred_id": pred_label,
-                "confusion_pair": f"{LABEL_NAMES[true_label]} -> {LABEL_NAMES[pred_label]}",
-            })
+            errors.append(
+                {
+                    "text": text,
+                    "true_label": LABEL_NAMES[true_label],
+                    "pred_label": LABEL_NAMES[pred_label],
+                    "true_id": true_label,
+                    "pred_id": pred_label,
+                    "confusion_pair": f"{LABEL_NAMES[true_label]} -> {LABEL_NAMES[pred_label]}",
+                }
+            )
 
     if max_examples is not None:
         errors = errors[:max_examples]
 
-    df = pd.DataFrame(errors)
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    df = pd.DataFrame(
+        errors,
+        columns=[
+            "text",
+            "true_label",
+            "pred_label",
+            "true_id",
+            "pred_id",
+            "confusion_pair",
+        ],
+    )
+    os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
     df.to_csv(output_file, index=False, encoding="utf-8-sig")
     print(f"Saved {len(df)} misclassified examples to {output_file}")
 
@@ -47,7 +60,7 @@ def save_confusion_matrix_csv(y_true, y_pred, output_file: str):
     class_names = [LABEL_NAMES[i] for i in labels]
 
     df = pd.DataFrame(cm, index=class_names, columns=class_names)
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
     df.to_csv(output_file, encoding="utf-8-sig")
     print(f"Saved confusion matrix CSV to {output_file}")
 
@@ -67,7 +80,7 @@ def save_confusion_matrix_plot(y_true, y_pred, output_file: str, title: str):
     plt.xticks(rotation=20)
     plt.tight_layout()
 
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
     plt.savefig(output_file, dpi=300, bbox_inches="tight")
     plt.close()
     print(f"Saved confusion matrix plot to {output_file}")
@@ -92,43 +105,42 @@ def save_stratified_error_sample(
         return
 
     if "confusion_pair" not in df.columns:
-        df["confusion_pair"] = df["true_label"].astype(str) + " -> " + df["pred_label"].astype(str)
+        df["confusion_pair"] = (
+            df["true_label"].astype(str) + " -> " + df["pred_label"].astype(str)
+        )
 
-    rng = random.Random(random_seed)
+    if total_samples < 1 or min_per_pair < 0:
+        raise ValueError("total_samples must be positive and min_per_pair nonnegative")
+    # Keep original row indices until both selection passes are complete.
+    # Re-indexing before exclusion would remove unrelated rows and reselect others.
+    target = min(total_samples, len(df))
+    selected = []
+    for _, group in df.groupby("confusion_pair", sort=True):
+        selected.extend(
+            group.sample(
+                n=min(len(group), min_per_pair), random_state=random_seed
+            ).index
+        )
+    if len(selected) > target:
+        selected = (
+            df.loc[selected].sample(n=target, random_state=random_seed).index.tolist()
+        )
+    remaining_df = df.drop(index=selected)
+    if len(selected) < target:
+        # Sample rows uniformly after minimum pair coverage; weighting by pair
+        # frequency again would overrepresent common pairs quadratically.
+        selected.extend(
+            remaining_df.sample(
+                n=target - len(selected), random_state=random_seed
+            ).index
+        )
+    sampled_df = df.loc[selected].copy()
 
-    pair_counts = df["confusion_pair"].value_counts()
-    pairs = pair_counts.index.tolist()
+    sampled_df = sampled_df.sort_values(["true_label", "pred_label"]).reset_index(
+        drop=True
+    )
 
-    sampled_parts = []
-
-    # first pass: ensure each pair gets a small representative sample
-    for pair in pairs:
-        group = df[df["confusion_pair"] == pair]
-        n_take = min(len(group), min_per_pair)
-        sampled_parts.append(group.sample(n=n_take, random_state=random_seed))
-
-    sampled_df = pd.concat(sampled_parts, ignore_index=True).drop_duplicates()
-
-    remaining = total_samples - len(sampled_df)
-    if remaining > 0:
-        remaining_df = df.drop(sampled_df.index, errors="ignore")
-        if not remaining_df.empty:
-            weights = remaining_df["confusion_pair"].map(pair_counts).astype(float)
-            extra_n = min(remaining, len(remaining_df))
-            extra_df = remaining_df.sample(
-                n=extra_n,
-                weights=weights,
-                random_state=random_seed
-            )
-            sampled_df = pd.concat([sampled_df, extra_df], ignore_index=True).drop_duplicates()
-
-    # if too many due to min_per_pair, trim randomly
-    if len(sampled_df) > total_samples:
-        sampled_df = sampled_df.sample(n=total_samples, random_state=random_seed)
-
-    sampled_df = sampled_df.sort_values(["true_label", "pred_label"]).reset_index(drop=True)
-
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
     sampled_df.to_csv(output_file, index=False, encoding="utf-8-sig")
     print(f"Saved stratified sample ({len(sampled_df)} rows) to {output_file}")
 
@@ -148,6 +160,8 @@ def save_overlap_analysis(
       - bert_wrong_lr_correct.csv
       - both_wrong.csv
     """
+    if not (len(texts) == len(y_true) == len(lr_pred) == len(bert_pred)):
+        raise ValueError("Paired inputs must have equal lengths")
     os.makedirs(output_dir, exist_ok=True)
 
     records = []
@@ -165,26 +179,40 @@ def save_overlap_analysis(
         else:
             case = "Both correct"
 
-        records.append({
-            "text": text,
-            "true_label": LABEL_NAMES[gold],
-            "lr_pred": LABEL_NAMES[lr],
-            "bert_pred": LABEL_NAMES[bert],
-            "case": case,
-            "lr_confusion_pair": f"{LABEL_NAMES[gold]} -> {LABEL_NAMES[lr]}" if lr_wrong else "",
-            "bert_confusion_pair": f"{LABEL_NAMES[gold]} -> {LABEL_NAMES[bert]}" if bert_wrong else "",
-        })
+        records.append(
+            {
+                "text": text,
+                "true_label": LABEL_NAMES[gold],
+                "lr_pred": LABEL_NAMES[lr],
+                "bert_pred": LABEL_NAMES[bert],
+                "case": case,
+                "lr_confusion_pair": f"{LABEL_NAMES[gold]} -> {LABEL_NAMES[lr]}"
+                if lr_wrong
+                else "",
+                "bert_confusion_pair": f"{LABEL_NAMES[gold]} -> {LABEL_NAMES[bert]}"
+                if bert_wrong
+                else "",
+            }
+        )
 
     df = pd.DataFrame(records)
 
     summary = df["case"].value_counts().rename_axis("case").reset_index(name="count")
-    summary.to_csv(os.path.join(output_dir, "overlap_summary.csv"), index=False, encoding="utf-8-sig")
+    summary.to_csv(
+        os.path.join(output_dir, "overlap_summary.csv"),
+        index=False,
+        encoding="utf-8-sig",
+    )
 
     df[df["case"] == "LR wrong / BERT correct"].to_csv(
-        os.path.join(output_dir, "lr_wrong_bert_correct.csv"), index=False, encoding="utf-8-sig"
+        os.path.join(output_dir, "lr_wrong_bert_correct.csv"),
+        index=False,
+        encoding="utf-8-sig",
     )
     df[df["case"] == "BERT wrong / LR correct"].to_csv(
-        os.path.join(output_dir, "bert_wrong_lr_correct.csv"), index=False, encoding="utf-8-sig"
+        os.path.join(output_dir, "bert_wrong_lr_correct.csv"),
+        index=False,
+        encoding="utf-8-sig",
     )
     df[df["case"] == "Both wrong"].to_csv(
         os.path.join(output_dir, "both_wrong.csv"), index=False, encoding="utf-8-sig"

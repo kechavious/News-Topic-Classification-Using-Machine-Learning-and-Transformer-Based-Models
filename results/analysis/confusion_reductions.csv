@@ -1,0 +1,13 @@
+gold,predicted,lr_errors,bert_errors,net_reduction
+World,Sports,55,23,32
+World,Business,69,47,22
+World,Sci/Tech,46,28,18
+Sports,World,17,7,10
+Sports,Business,13,6,7
+Sports,Sci/Tech,6,4,2
+Business,World,64,33,31
+Business,Sports,15,10,5
+Business,Sci/Tech,147,139,8
+Sci/Tech,World,53,39,14
+Sci/Tech,Sports,20,15,5
+Sci/Tech,Business,118,86,32

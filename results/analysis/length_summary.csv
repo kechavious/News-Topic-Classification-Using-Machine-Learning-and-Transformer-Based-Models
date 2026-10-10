@@ -1,0 +1,5 @@
+partition,n,mean_words,median_words
+all,7600,37.72236842105263,37.0
+bert_correct,7163,37.791846991484014,37.0
+bert_wrong,437,36.58352402745995,36.0
+lr_wrong_bert_correct,301,36.87375415282392,35.0

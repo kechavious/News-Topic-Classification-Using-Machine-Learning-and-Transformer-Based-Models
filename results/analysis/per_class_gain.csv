@@ -1,0 +1,5 @@
+label,n,lr_correct,bert_correct,net_gain
+World,1900,1730,1802,72
+Sports,1900,1864,1883,19
+Business,1900,1674,1718,44
+Sci/Tech,1900,1709,1760,51
