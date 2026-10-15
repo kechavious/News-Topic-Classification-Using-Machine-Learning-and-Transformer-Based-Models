@@ -41,7 +41,7 @@ jobs:
           }, report["overlap"]
           assert abs(report["accuracy_difference_bert_minus_lr"] - 186/7600) < 1e-12
           assert abs(report["metrics"]["bert"]["accuracy"] - 0.9425) < 1e-12
-          assert abs(report["metrics"]["logistic_regression"]["accuracy"] - (1 - 416/7600)) < 1e-12
+          assert abs(report["metrics"]["logistic_regression"]["accuracy"] - (1 - 623/7600)) < 1e-12
           print("Historical paired statistics verified:", report["overlap"])
           PY
       - name: Upload independent audit artifacts
