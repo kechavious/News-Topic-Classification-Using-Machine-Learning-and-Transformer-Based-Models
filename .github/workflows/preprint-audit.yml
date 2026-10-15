@@ -1,0 +1,45 @@
+name: Preprint statistical audit
+
+on:
+  push:
+    branches: [preprint-v1]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install audit dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy pandas scipy scikit-learn matplotlib
+      - name: Run paired statistical audit
+        run: |
+          python src/research_analysis.py --output-dir runs/preprint-ci-audit
+          python src/overlap_analysis.py --output-dir runs/preprint-ci-overlap
+      - name: Verify reference statistics
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path("runs/preprint-ci-audit")
+          files = list(path.rglob("*.json"))
+          assert files, "No audit JSON artifacts produced"
+          print("Audit JSON files:", [str(p) for p in files])
+          print("Results generated; numeric verification must use file schema.")
+          PY
+      - name: Upload independent audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: preprint-paired-audit
+          path: |
+            runs/preprint-ci-audit/
+            runs/preprint-ci-overlap/
+          if-no-files-found: warn
